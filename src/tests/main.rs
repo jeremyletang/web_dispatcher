@@ -20,6 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#![feature(phase)]
+#![allow(dead_code)]
+
+#[phase(syntax, link)]
 extern crate web_dispatcher;
 
-fn main() {}
+mod t;
+
+#[route = "/hello/world"]
+pub fn hello_route() {
+    println!("hello from route")
+}
+
+#[route = "/hello/world2"]
+pub fn hello_route2() {
+    println!("hello from route2")
+}
+
+
+fn main() {
+    let t = get_routes!();
+    println!("{:?}", t);
+    let (f, s) = t[2];
+    f();
+}
