@@ -32,6 +32,7 @@
 #![allow(missing_doc)]
 #![feature(macro_registrar, managed_boxes, quote)]
 #![feature(macro_rules)]
+#![feature(struct_variant)]
 
 extern crate collections;
 extern crate syntax;

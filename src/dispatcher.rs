@@ -27,8 +27,7 @@
 use std::any::Any;
 use collections::HashMap;
 
-use response::NoResponse;
-use route_utils::RespResult;
+use response::Resp;
 
 pub struct Dispatcher;
 
@@ -41,7 +40,7 @@ impl Dispatcher {
                route: ~str,
                web_params: HashMap<~str, ~str>,
                user_param: ~Any)
-               -> RespResult {
-        Err(NoResponse)
+               -> Resp {
+        Resp::no()
     }
 }

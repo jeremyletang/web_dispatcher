@@ -25,11 +25,7 @@
 use std::any::Any;
 
 use collections::HashMap;
-use response::Response;
-use response::RespExit;
-
-/// The return type of all the routes functions
-pub type RespResult = Result<Response, RespExit>;
+use response::Resp;
 
 /// The type of a route function
-pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> RespResult;
+pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> Resp;

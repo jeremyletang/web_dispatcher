@@ -22,21 +22,29 @@
 
 #![feature(phase)]
 
+extern crate collections;
+
 #[phase(syntax, link)]
 extern crate web_dispatcher;
+
+use std::any::Any;
+use collections::HashMap;
+use web_dispatcher::response::Resp;
 
 mod foo;
 
 #[method = "POST"]
 #[route = "/hello/main/POST"]
-pub fn hello_route() {
-    println!("hello from root mod !")
+pub fn hello_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+    println!("hello from root mod !");
+    Resp::no()
 }
 
 #[method = "GET"]
 #[route = "/hello/main/GET"]
-pub fn hello_route2() {
-    println!("hello from root mod too !")
+pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+    println!("hello from root mod too !");
+    Resp::no()
 }
 
 fn main() {
@@ -44,6 +52,6 @@ fn main() {
     println!("Routes vec type: {:?}", routes);
     for &(f, s, m) in routes.iter() {
         println!("For route: {} with method {}", s, m);
-        f();
+        f(HashMap::new(), box 42);
     }
 }

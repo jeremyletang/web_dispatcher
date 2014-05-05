@@ -20,14 +20,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-pub enum RespExit {
-    NoResponse,
+pub enum Resp {
+    Filled(RespContent),
+    NoResp,
     InternalError(~str)
+}
+
+impl Resp {
+    pub fn no() -> Resp {
+        NoResp
+    }
+
+    pub fn empty() -> Resp {
+        Filled(RespContent::empty())
+    }
+
+    pub fn internal_error(error: ~str) -> Resp {
+        InternalError(error)
+    }
+}
+
+pub struct RespContent {
+    pub header: Header,
+    pub body: Body
+}
+
+impl RespContent {
+    pub fn empty() -> RespContent {
+        RespContent {
+            header: Header::empty(),
+            body: Body::empty()
+        }
+    }
 }
 
 pub struct Header {
     pub s: ~str
 }
+
 
 impl Header {
     pub fn empty() -> Header {
@@ -35,10 +65,6 @@ impl Header {
             s: "".to_owned()
         }
     }
-}
-
-pub struct Body {
-    pub s: ~str
 }
 
 impl Body {
@@ -49,16 +75,6 @@ impl Body {
     }
 }
 
-pub struct Response {
-    pub header: Header,
-    pub body: Body
-}
-
-impl Response {
-    pub fn empty() -> Response {
-        Response {
-            header: Header::empty(),
-            body: Body::empty()
-        }
-    }
+pub struct Body {
+    pub s: ~str
 }

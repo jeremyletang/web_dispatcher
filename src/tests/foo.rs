@@ -20,14 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+use std::any::Any;
+use collections::HashMap;
+use web_dispatcher::response::Resp;
+
 #[route = "/hello/foo"]
-pub fn hello_route3() {
-    println!("Hello from foo mod !")
+pub fn hello_route3(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+    println!("Hello from foo mod !");
+    Resp::no()
 }
 
 pub mod bar {
+    use std::any::Any;
+    use collections::HashMap;
+    use web_dispatcher::response::Resp;
+
     #[route = "/hello/foo/bar"]
-    pub fn hello_route4() {
-        println!("hello from foo::bar mod !")
+    pub fn hello_route4(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+        println!("hello from foo::bar mod !");
+        Resp::no()
     }
 }
