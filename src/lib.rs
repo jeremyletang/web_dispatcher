@@ -39,8 +39,6 @@ extern crate regex;
 extern crate regex_macros;
 
 pub use dispatcher::Dispatcher;
-pub use database::Database;
-pub use method::{Method, Get, Post};
 
 #[doc(hidden)]
 pub mod macros;
@@ -48,5 +46,4 @@ pub mod route_utils;
 pub mod response;
 mod method;
 mod dispatcher;
-mod database;
 
