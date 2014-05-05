@@ -29,11 +29,36 @@ pub struct Header {
     pub s: ~str
 }
 
+impl Header {
+    pub fn empty() -> Header {
+        Header {
+            s: "".to_owned()
+        }
+    }
+}
+
 pub struct Body {
     pub s: ~str
+}
+
+impl Body {
+    pub fn empty() -> Body {
+        Body {
+            s: "".to_owned()
+        }
+    }
 }
 
 pub struct Response {
     pub header: Header,
     pub body: Body
+}
+
+impl Response {
+    pub fn empty() -> Response {
+        Response {
+            header: Header::empty(),
+            body: Body::empty()
+        }
+    }
 }

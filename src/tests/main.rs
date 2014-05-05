@@ -28,23 +28,22 @@ extern crate web_dispatcher;
 mod foo;
 
 #[method = "POST"]
-#[route = "/hello/world"]
+#[route = "/hello/main/POST"]
 pub fn hello_route() {
     println!("hello from root mod !")
 }
 
 #[method = "GET"]
-#[route = "/hello/world2"]
+#[route = "/hello/main/GET"]
 pub fn hello_route2() {
     println!("hello from root mod too !")
 }
 
-
 fn main() {
     let routes = get_routes!();
     println!("Routes vec type: {:?}", routes);
-    for &(f, s) in routes.iter() {
-        println!("For route: {}", s);
+    for &(f, s, m) in routes.iter() {
+        println!("For route: {} with method {}", s, m);
         f();
     }
 }

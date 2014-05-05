@@ -22,5 +22,26 @@
 
 //! The web dispatcher
 
+#![allow(unused_variable)]
+
+use std::any::Any;
+use collections::HashMap;
+
+use response::NoResponse;
+use route_utils::RespResult;
+
 pub struct Dispatcher;
 
+impl Dispatcher {
+    pub fn new() -> Dispatcher {
+        Dispatcher
+    }
+
+    pub fn run(&mut self,
+               route: ~str,
+               web_params: HashMap<~str, ~str>,
+               user_param: ~Any)
+               -> RespResult {
+        Err(NoResponse)
+    }
+}

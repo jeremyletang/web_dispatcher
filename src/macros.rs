@@ -37,10 +37,11 @@ use syntax::ast::PathSegment;
 use syntax::owned_slice::OwnedSlice;
 use syntax::ast::ExprPath;
 
-// Store routes in a local data (vector of path ident, associated route)
-static routes: local_data::Key<Vec<(Vec<Ident>, ~str)>> = &local_data::Key;
 
-fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str)> {
+// Store routes in a local data (vector of path ident, associated route, method as a string)
+static routes: local_data::Key<Vec<(Vec<Ident>, ~str, ~str)>> = &local_data::Key;
+
+fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str,~str)> {
     local_data::get(routes, |d| {
         match d {
             Some(v) =>  v.clone(),
@@ -64,9 +65,9 @@ pub fn registrar(register: |Name, SyntaxExtension|) {
 
 fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> ~MacResult {
     let v = local_data_get_or_init();
-    let v = v.iter().map(|&(ref f, ref s)| {
+    let v = v.iter().map(|&(ref f, ref s, ref m)| {
         let p = create_func_path_expr(f, sp);
-        quote_expr!(&*cx, ($p, $s))
+        quote_expr!(&*cx, ($p, $s, $m))
     }).collect();
     let v = create_slice_expr(v, sp);
     MacExpr::new(quote_expr!(cx, $v))
@@ -123,15 +124,10 @@ fn get_route_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: 
         MetaNameValue(_, ref l) => {
             match l.node {
                 LitStr(ref s, _) => {
-                    let mut v = local_data_get_or_init();
-                    // retrieve the complete path of the function
-                    let mut vec_ident = cx.mod_path.clone();
-                    // concatenate the name of the function
-                    vec_ident.push(item.ident);
                     // check if the route already exist.
-                    if !route_already_exist(s.get().to_owned()) {
-                        v.push((vec_ident, s.get().to_owned()));
-                        local_data::set(routes, v);
+                    let route_attr = s.get().to_owned();
+                    if !route_already_exist(&route_attr) {
+                        insert_route(cx, item, route_attr);
                     } else {
                         cx.span_err(sp, "this route already exist for an other function")
                     }
@@ -144,10 +140,29 @@ fn get_route_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: 
     }
 }
 
-// check if a route is already defined for an other function
-fn route_already_exist(route: ~str) -> bool {
+// insert the route in the local data
+fn insert_route(cx: &mut ExtCtxt, item: @Item, route_attr: ~str) {
     let v = local_data_get_or_init();
-    v.iter().fold(false, |b, &(_, ref s)| { b || s == &route })
+    // retrieve the complete path of the function
+    let mut vec_ident = cx.mod_path.clone();
+    // concatenate the name of the function
+    vec_ident.push(item.ident);
+    // insert the route and save
+    let mut method = "GET".to_owned();
+    let mut v: Vec<(Vec<Ident>, ~str, ~str)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
+        if v_i == &vec_ident {
+            method = m.clone();
+            false
+        } else { true }
+    }).collect();
+    v.push((vec_ident, route_attr, method));
+    local_data::set(routes, v);
+}
+
+// check if a route is already defined for an other function
+fn route_already_exist(route: &~str) -> bool {
+    let v = local_data_get_or_init();
+    v.iter().fold(false, |b, &(_, ref s, _)| { b || s == route })
 }
 
 fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
@@ -168,8 +183,9 @@ fn get_method_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item:
         MetaNameValue(_, ref l) => {
             match l.node {
                 LitStr(ref s, _) => {
-                    if is_method_attribute_valid(s.get()) {
-                        //
+                    let method_attr = s.get();
+                    if is_method_attribute_valid(method_attr) {
+                        insert_method(cx, item, method_attr.to_owned());
                     } else {
                         cx.span_err(sp, "this method attribut don't exist. Here is a list of \
                             available attribute: [GET, POST]")
@@ -188,4 +204,23 @@ fn is_method_attribute_valid(attr: &str) -> bool {
         "GET" | "POST" => true,
         _ => false
     }
+}
+
+// insert the method in the local data
+fn insert_method(cx: &mut ExtCtxt, item: @Item, method_attr: ~str) {
+    let v = local_data_get_or_init();
+    // retrieve the complete path of the function
+    let mut vec_ident = cx.mod_path.clone();
+    // concatenate the name of the function
+    vec_ident.push(item.ident);
+    // insert the route and save
+    let mut route = "".to_owned();
+    let mut v: Vec<(Vec<Ident>, ~str, ~str)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
+        if v_i == &vec_ident {
+            route = r.clone();
+            false
+        } else { true }
+    }).collect();
+    v.push((vec_ident, route, method_attr));
+    local_data::set(routes, v);
 }
