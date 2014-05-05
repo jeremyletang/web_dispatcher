@@ -20,26 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! A web dispatcher library for Rust
+//! Available methods for web requests
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
-#![desc = "web dispatcher for Rust"]
-#![license = "mit"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![allow(dead_code)]
-#![allow(missing_doc)]
-#![feature(macro_registrar, managed_boxes, quote)]
-#![feature(macro_rules)]
-
-extern crate syntax;
-extern crate regex;
-extern crate regex_macros;
-
-pub use dispatcher::Dispatcher;
-pub use method::{Method, Get, Post};
-
-#[doc(hidden)]
-pub mod macros;
-mod method;
-mod dispatcher;
+/// Available methods for web requests
+pub enum Method {
+    /// GET method
+    Get,
+    /// POST method
+    Post
+}

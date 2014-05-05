@@ -49,6 +49,7 @@ fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str)> {
     })
 }
 
+#[doc(hidden)]
 #[macro_registrar]
 pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
@@ -60,7 +61,7 @@ pub fn registrar(register: |Name, SyntaxExtension|) {
              None));
 }
 
-fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
+fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> ~MacResult {
     let v = local_data_get_or_init();
     let v = v.iter().map(|&(ref f, ref s)| {
         let p = create_func_path_expr(f, sp);
@@ -105,7 +106,7 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
 
 fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
     match meta_item.node {
-        MetaNameValue(ref s, ref l) => {
+        MetaNameValue(_, ref l) => {
             match l.node {
                 LitStr(ref s, _) => {
                     let mut v = local_data_get_or_init();
@@ -113,6 +114,7 @@ fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item)
                     let mut vec_ident = cx.mod_path.clone();
                     // concatenate the name of the function
                     vec_ident.push(item.ident);
+                    // check if the route already exist.
                     if !route_already_exist(s.get().to_owned()) {
                         v.push((vec_ident, s.get().to_owned()));
                         local_data::set(routes, v);
@@ -136,8 +138,7 @@ fn route_already_exist(route: ~str) -> bool {
 
 fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
     match item.node {
-        ItemFn(ref decl, ref style, ref abi, ref generics, block) => {
-            let function_name = token::get_ident(item.ident).get().to_owned();
+        ItemFn(_, _, _, _, _) => {
             get_attr_value(cx, sp, meta_item, item);
             item
         },
