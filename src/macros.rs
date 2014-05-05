@@ -53,6 +53,7 @@ fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str)> {
 #[macro_registrar]
 pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
+    register(token::intern("method"), ItemModifier(expand_method));
     register(token::intern("get_routes"),
              NormalTT(~BasicMacroExpander {
                 expander: expand_get_routes,
@@ -104,7 +105,20 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
     }
 }
 
-fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
+fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
+    match item.node {
+        ItemFn(_, _, _, _, _) => {
+            get_route_attr_value(cx, sp, meta_item, item);
+            item
+        },
+        _ => {
+            cx.span_err(sp, "route attribute can only be used on functions");
+            item
+        }
+    }
+}
+
+fn get_route_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
     match meta_item.node {
         MetaNameValue(_, ref l) => {
             match l.node {
@@ -136,15 +150,42 @@ fn route_already_exist(route: ~str) -> bool {
     v.iter().fold(false, |b, &(_, ref s)| { b || s == &route })
 }
 
-fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
+fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
     match item.node {
         ItemFn(_, _, _, _, _) => {
-            get_attr_value(cx, sp, meta_item, item);
+            get_method_attr_value(cx, sp, meta_item, item);
             item
         },
         _ => {
-            cx.span_err(sp, "route attribute can only be used on functions");
+            cx.span_err(sp, "method attribute can only be used on functions");
             item
         }
+    }
+}
+
+fn get_method_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
+    match meta_item.node {
+        MetaNameValue(_, ref l) => {
+            match l.node {
+                LitStr(ref s, _) => {
+                    if is_method_attribute_valid(s.get()) {
+                        //
+                    } else {
+                        cx.span_err(sp, "this method attribut don't exist. Here is a list of \
+                            available attribute: [GET, POST]")
+                    }
+                },
+                _ => cx.span_err(sp, "method attribute can only use literal str")
+            }
+        }
+        _ => cx.span_err(sp, "method attribute must be on the form: \
+            #[method = \"GET\"] pub fn my_route()")
+    }
+}
+
+fn is_method_attribute_valid(attr: &str) -> bool {
+    match attr {
+        "GET" | "POST" => true,
+        _ => false
     }
 }

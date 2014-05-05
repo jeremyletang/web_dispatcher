@@ -27,12 +27,13 @@ extern crate web_dispatcher;
 
 mod foo;
 
-// #[method = "get"]
+#[method = "POST"]
 #[route = "/hello/world"]
 pub fn hello_route() {
     println!("hello from root mod !")
 }
 
+#[method = "GET"]
 #[route = "/hello/world2"]
 pub fn hello_route2() {
     println!("hello from root mod too !")

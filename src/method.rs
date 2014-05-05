@@ -23,6 +23,7 @@
 //! Available methods for web requests
 
 /// Available methods for web requests
+#[deriving(Clone, Show, Eq)]
 pub enum Method {
     /// GET method
     Get,
