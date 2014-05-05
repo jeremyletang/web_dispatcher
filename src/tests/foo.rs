@@ -20,30 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#![feature(phase)]
-#![allow(dead_code)]
-
-#[phase(syntax, link)]
-extern crate web_dispatcher;
-
-mod foo;
-
-#[route = "/hello/world"]
-pub fn hello_route() {
-    println!("hello from root mod !")
+#[route = "/hello/foo"]
+pub fn hello_route3() {
+    println!("Hello from foo mod !")
 }
 
-#[route = "/hello/world2"]
-pub fn hello_route2() {
-    println!("hello from root mod too !")
-}
-
-
-fn main() {
-    let routes = get_routes!();
-    println!("Routes vec type: {:?}", routes);
-    for &(f, s) in routes.iter() {
-        println!("For route: {}", s);
-        f();
+pub mod bar {
+    #[route = "/hello/foo/bar"]
+    pub fn hello_route4() {
+      println!("hello from foo::bar mod !")
     }
 }
