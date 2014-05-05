@@ -46,8 +46,13 @@ use syntax::ast::{Ident, TokenTree, Expr, Name, ExprVec, MetaItem, MetaNameValue
 use syntax::ext::base::{ExtCtxt, MacResult, SyntaxExtension, BasicMacroExpander, NormalTT,
                         ItemModifier, MacExpr};
 
-// Store routes in a local data
-static routes: local_data::Key<Vec<(Ident, ~str)>> = &local_data::Key;
+use syntax::ast::Path;
+use syntax::ast::PathSegment;
+use syntax::owned_slice::OwnedSlice;
+use syntax::ast::ExprPath;
+
+// Store routes in a local data (vector of path ident, associated route)
+static routes: local_data::Key<Vec<(Vec<Ident>, ~str)>> = &local_data::Key;
 
 #[macro_registrar]
 pub fn registrar(register: |Name, SyntaxExtension|) {
@@ -67,13 +72,39 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResul
             None         => Vec::new()
         }
     });
-    let v = v.iter().map(|&(f, ref s)| {
-        quote_expr!(&*cx, ($f, $s))
+    let v = v.iter().map(|&(ref f, ref s)| {
+        let p = create_func_path_expr(f, sp);
+        quote_expr!(&*cx, ($p, $s))
     }).collect();
     let v = create_slice_expr(v, sp);
     MacExpr::new(quote_expr!(cx, $v))
 }
 
+// create the path expression
+fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> @Expr {
+    // create the list of path segment from the idents
+    let segs = vec_ident.iter().fold(Vec::new(), |mut v, &i| {
+        v.push(PathSegment {
+            identifier: i,
+            lifetimes: Vec::new(),
+            types: OwnedSlice::empty(),
+        });
+        v
+    });
+    // create the complete Path from the segments
+    let func_path = Path {
+        span: sp,
+        global: false,
+        segments: segs,
+    };
+    @Expr {
+        id: ast::DUMMY_NODE_ID,
+        node: ExprPath(func_path),
+        span: sp
+    }
+}
+
+// create a slice from the vector of (path / routes)
 fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
     @Expr {
         id: ast::DUMMY_NODE_ID,
@@ -93,10 +124,11 @@ pub fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @I
                             None => Vec::new()
                         }
                     });
-                    for m in cx.mod_path.iter() {
-                        println!("mod path: {}", token::get_ident(*m).get().to_owned());
-                    }
-                    v.push((item.ident, s.get().to_owned()));
+                    // retrieve the complete path of the function
+                    let mut vec_ident = cx.mod_path.clone();
+                    // concatenate the name of the function
+                    vec_ident.push(item.ident);
+                    v.push((vec_ident, s.get().to_owned()));
                     local_data::set(routes, v);
                 },
                 _ => cx.span_err(sp, "route attribute can only use literal str")

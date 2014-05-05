@@ -40,8 +40,10 @@ pub fn hello_route2() {
 
 
 fn main() {
-    let t = get_routes!();
-    println!("{:?}", t);
-    let (f, s) = t[2];
-    f();
+    let routes = get_routes!();
+    println!("Routes vec type: {:?}", routes);
+    for &(f, s) in routes.iter() {
+        println!("For route: {}", s);
+        f();
+    }
 }
