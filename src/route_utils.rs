@@ -20,33 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! A web dispatcher library for Rust
+//! Some utils types for routes and responses
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
-#![desc = "web dispatcher for Rust"]
-#![license = "mit"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![experimental]
-#![allow(dead_code)]
-#![allow(missing_doc)]
-#![feature(macro_registrar, managed_boxes, quote)]
-#![feature(macro_rules)]
+use collections::HashMap;
+use database::Database;
+use response::Response;
+use response::RespExit;
 
-extern crate collections;
-extern crate syntax;
-extern crate regex;
-extern crate regex_macros;
+pub type RespResult = Result<Response, RespExit>;
 
-pub use dispatcher::Dispatcher;
-pub use database::Database;
-pub use method::{Method, Get, Post};
-
-#[doc(hidden)]
-pub mod macros;
-pub mod route_utils;
-pub mod response;
-mod method;
-mod dispatcher;
-mod database;
-
+pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Database) -> RespResult;

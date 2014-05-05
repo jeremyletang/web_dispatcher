@@ -20,33 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! A web dispatcher library for Rust
+pub enum RespExit {
+    NoResponse,
+    InternalError(~str)
+}
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
-#![desc = "web dispatcher for Rust"]
-#![license = "mit"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![experimental]
-#![allow(dead_code)]
-#![allow(missing_doc)]
-#![feature(macro_registrar, managed_boxes, quote)]
-#![feature(macro_rules)]
+pub struct Header {
+    pub s: ~str
+}
 
-extern crate collections;
-extern crate syntax;
-extern crate regex;
-extern crate regex_macros;
+pub struct Body {
+    pub s: ~str
+}
 
-pub use dispatcher::Dispatcher;
-pub use database::Database;
-pub use method::{Method, Get, Post};
-
-#[doc(hidden)]
-pub mod macros;
-pub mod route_utils;
-pub mod response;
-mod method;
-mod dispatcher;
-mod database;
-
+pub struct Response {
+    pub header: Header,
+    pub body: Body
+}
