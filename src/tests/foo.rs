@@ -28,6 +28,6 @@ pub fn hello_route3() {
 pub mod bar {
     #[route = "/hello/foo/bar"]
     pub fn hello_route4() {
-      println!("hello from foo::bar mod !")
+        println!("hello from foo::bar mod !")
     }
 }

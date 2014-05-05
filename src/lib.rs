@@ -35,6 +35,8 @@
 #![feature(macro_rules)]
 
 extern crate syntax;
+extern crate regex;
+extern crate regex_macros;
 
 pub use dispatcher::Dispatcher;
 

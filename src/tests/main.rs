@@ -27,6 +27,7 @@ extern crate web_dispatcher;
 
 mod foo;
 
+// #[method = "get"]
 #[route = "/hello/world"]
 pub fn hello_route() {
     println!("hello from root mod !")

@@ -40,6 +40,15 @@ use syntax::ast::ExprPath;
 // Store routes in a local data (vector of path ident, associated route)
 static routes: local_data::Key<Vec<(Vec<Ident>, ~str)>> = &local_data::Key;
 
+fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str)> {
+    local_data::get(routes, |d| {
+        match d {
+            Some(v) =>  v.clone(),
+            None => Vec::new()
+        }
+    })
+}
+
 #[macro_registrar]
 pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
@@ -52,12 +61,7 @@ pub fn registrar(register: |Name, SyntaxExtension|) {
 }
 
 fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree]) -> ~MacResult {
-    let v = local_data::get(routes, |d| {
-        match d {
-            Some(v) =>  v.clone(),
-            None         => Vec::new()
-        }
-    });
+    let v = local_data_get_or_init();
     let v = v.iter().map(|&(ref f, ref s)| {
         let p = create_func_path_expr(f, sp);
         quote_expr!(&*cx, ($p, $s))
@@ -99,23 +103,22 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
     }
 }
 
-pub fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
+fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
     match meta_item.node {
         MetaNameValue(ref s, ref l) => {
             match l.node {
                 LitStr(ref s, _) => {
-                    let mut v = local_data::get(routes, |d| {
-                        match d {
-                            Some(v) =>  v.clone(),
-                            None => Vec::new()
-                        }
-                    });
+                    let mut v = local_data_get_or_init();
                     // retrieve the complete path of the function
                     let mut vec_ident = cx.mod_path.clone();
                     // concatenate the name of the function
                     vec_ident.push(item.ident);
-                    v.push((vec_ident, s.get().to_owned()));
-                    local_data::set(routes, v);
+                    if !route_already_exist(s.get().to_owned()) {
+                        v.push((vec_ident, s.get().to_owned()));
+                        local_data::set(routes, v);
+                    } else {
+                        cx.span_err(sp, "this route already exist for an other function")
+                    }
                 },
                 _ => cx.span_err(sp, "route attribute can only use literal str")
             }
@@ -123,6 +126,12 @@ pub fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @I
         _ => cx.span_err(sp, "route attribute must be on the form: \
             #[route = \"my/route/\"] pub fn my_route()")
     }
+}
+
+// check if a route is already defined for an other function
+fn route_already_exist(route: ~str) -> bool {
+    let v = local_data_get_or_init();
+    v.iter().fold(false, |b, &(_, ref s)| { b || s == &route })
 }
 
 fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
