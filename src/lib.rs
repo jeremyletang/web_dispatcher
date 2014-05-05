@@ -94,7 +94,7 @@ pub fn get_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @I
                         }
                     });
                     for m in cx.mod_path.iter() {
-                        println!("mod path: {}", token::get_ident(item.ident).get().to_owned());
+                        println!("mod path: {}", token::get_ident(*m).get().to_owned());
                     }
                     v.push((item.ident, s.get().to_owned()));
                     local_data::set(routes, v);
