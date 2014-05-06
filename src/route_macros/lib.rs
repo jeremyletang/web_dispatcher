@@ -36,17 +36,30 @@ extern crate syntax;
 use std::local_data;
 
 use syntax::ast;
-use syntax::codemap::Span;
-use syntax::parse::token;
-use syntax::ast::{Ident, TokenTree, Expr, Name, ExprVec, MetaItem, MetaNameValue, LitStr, Item,
-                  ItemFn};
-use syntax::ext::base::{ExtCtxt, MacResult, SyntaxExtension, BasicMacroExpander, NormalTT,
-                        ItemModifier, MacExpr};
-
 use syntax::ast::Path;
+use syntax::parse::token;
+use syntax::ast::ExprPath;
+use syntax::codemap::Span;
 use syntax::ast::PathSegment;
 use syntax::owned_slice::OwnedSlice;
-use syntax::ast::ExprPath;
+use syntax::ast::{Ident,
+                  TokenTree,
+                  Expr,
+                  Name,
+                  ExprVec,
+                  MetaItem,
+                  MetaNameValue,
+                  LitStr,
+                  Item,
+                  ItemFn};
+use syntax::ext::base::{ExtCtxt,
+                        MacResult,
+                        SyntaxExtension,
+                        BasicMacroExpander,
+                        NormalTT,
+                        ItemModifier,
+                        MacExpr};
+
 
 
 // Store routes in a local data (vector of path ident, associated route, method as a string)
@@ -117,7 +130,11 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
     }
 }
 
-fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
+fn expand_route(cx: &mut ExtCtxt,
+                sp: Span,
+                meta_item: @MetaItem,
+                item: @Item)
+                -> @Item {
     match item.node {
         ItemFn(_, _, _, _, _) => {
             get_route_attr_value(cx, sp, meta_item, item);
@@ -130,7 +147,10 @@ fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -
     }
 }
 
-fn get_route_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
+fn get_route_attr_value(cx: &mut ExtCtxt,
+                        sp: Span,
+                        meta_item: @MetaItem,
+                        item: @Item) {
     match meta_item.node {
         MetaNameValue(_, ref l) => {
             match l.node {
@@ -152,7 +172,9 @@ fn get_route_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: 
 }
 
 // insert the route in the local data
-fn insert_route(cx: &mut ExtCtxt, item: @Item, route_attr: ~str) {
+fn insert_route(cx: &mut ExtCtxt,
+                item: @Item,
+                route_attr: ~str) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
@@ -189,7 +211,10 @@ fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) 
     }
 }
 
-fn get_method_attr_value(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) {
+fn get_method_attr_value(cx: &mut ExtCtxt,
+                         sp: Span,
+                         meta_item: @MetaItem,
+                         item: @Item) {
     match meta_item.node {
         MetaNameValue(_, ref l) => {
             match l.node {
@@ -218,7 +243,9 @@ fn is_method_attribute_valid(attr: &str) -> bool {
 }
 
 // insert the method in the local data
-fn insert_method(cx: &mut ExtCtxt, item: @Item, method_attr: ~str) {
+fn insert_method(cx: &mut ExtCtxt,
+                 item: @Item,
+                 method_attr: ~str) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
