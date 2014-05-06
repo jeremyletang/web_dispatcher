@@ -39,7 +39,7 @@ use syntax::ast;
 use syntax::codemap::Span;
 use syntax::parse::token;
 use syntax::ast::{Ident, TokenTree, Expr, Name, ExprVec, MetaItem, MetaNameValue, LitStr, Item,
-                  ItemFn, FnDecl};
+                  ItemFn};
 use syntax::ext::base::{ExtCtxt, MacResult, SyntaxExtension, BasicMacroExpander, NormalTT,
                         ItemModifier, MacExpr};
 
@@ -119,29 +119,14 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
 
 fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
     match item.node {
-        ItemFn(fn_decl, _, _, _, _) => {
-            if function_attribute_are_valid(fn_decl) {
-                get_route_attr_value(cx, sp, meta_item, item);
-            } else {
-                cx.span_err(sp, "route functions must be of type: fn(_: HashMap<~str, ~str>, _: \
-                    ~Any) -> RespResult;");
-            }
+        ItemFn(_, _, _, _, _) => {
+            get_route_attr_value(cx, sp, meta_item, item);
             item
         },
         _ => {
             cx.span_err(sp, "route attribute can only be used on functions");
             item
         }
-    }
-}
-
-
-// FIXME: improve this or totally remove it
-fn function_attribute_are_valid(fn_decl: @FnDecl) -> bool {
-    if fn_decl.inputs.len() != 2 {
-        false
-    } else {
-        true
     }
 }
 

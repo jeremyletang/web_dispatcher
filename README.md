@@ -10,8 +10,9 @@ Here is a simple a example of what am i doing:
 #![feature(phase)]
 
 extern crate collections;
-#[phase(syntax, link)]
 extern crate web_dispatcher;
+#[phase(syntax, link)]
+extern crate route_macros;
 
 use std::any::Any;
 use collections::HashMap;
@@ -33,7 +34,7 @@ pub fn other_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
 }
 
 fn main() {
-    let mut dispatcher = Dispatcher::new(get_routes!());
+    let mut dispatcher = Dispatcher::new(routes!());
     dispatcher.run("/", HashMap::new());
 }
 
