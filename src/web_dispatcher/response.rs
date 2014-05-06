@@ -25,7 +25,8 @@ use std::default::Default;
 pub enum Resp<T> {
     Filled(T),
     NoResp,
-    InternalError(~str)
+    InternalError(~str),
+    RoutingError(~str)
 }
 
 impl<T> Resp<T> {
@@ -35,6 +36,13 @@ impl<T> Resp<T> {
 
     pub fn internal_error(error: ~str) -> Resp<T> {
         InternalError(error)
+    }
+
+    pub fn unwrap(self) -> T {
+        match self {
+            Filled(t) => t,
+            _         => fail!()
+        }
     }
 }
 

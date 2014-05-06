@@ -27,18 +27,20 @@
 use std::default::Default;
 use collections::HashMap;
 
-use response::Resp;
+use response::{Resp, RoutingError};
 use tools::{RoutesFnType, DummyProducer, Producer};
 
 pub struct Dispatcher<T, U = DummyProducer> {
-    routes: ~[(RoutesFnType<T>, &'static str, &'static str)],
+    routes: HashMap<~str, (RoutesFnType<T>, &'static str)>,
     producer: U
 }
 
 impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
-    pub fn new(routes: ~[(RoutesFnType<T>, &'static str, &'static str)]) -> Dispatcher<T, U> {
+    pub fn new(routes: Vec<(RoutesFnType<T>, &'static str, &'static str)>) -> Dispatcher<T, U> {
         Dispatcher {
-            routes: routes,
+            routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m)| {
+                h.insert(r.to_owned(), (f, m)); h
+            }),
             producer: Default::default()
         }
     }
@@ -51,9 +53,9 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
                route: &str,
                web_params: HashMap<~str, ~str>)
                -> Resp<T> {
-        for &(f, s, m) in self.routes.iter() {
-            f(HashMap::new(), self.producer.get_new());
+        match self.routes.find(&route.to_owned()) {
+            Some(&(f, m)) => f(web_params, self.producer.get_new()),
+            None => RoutingError(format!("route: {}, don't exist", route))
         }
-        Resp::no()
     }
 }

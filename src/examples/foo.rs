@@ -22,22 +22,20 @@
 
 use std::any::Any;
 use collections::HashMap;
-use web_dispatcher::response::Resp;
+use web_dispatcher::response::{Resp, Filled};
 
 #[route = "/hello/foo"]
 pub fn hello_route3(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
-    println!("Hello from foo mod !");
-    Resp::no()
+    Filled("Hello from foo mod !".to_owned())
 }
 
 pub mod bar {
     use std::any::Any;
     use collections::HashMap;
-    use web_dispatcher::response::Resp;
+    use web_dispatcher::response::{Resp, Filled};
 
     #[route = "/hello/foo/bar"]
     pub fn hello_route4(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
-        println!("hello from foo::bar mod !");
-        Resp::no()
+        Filled("hello from foo::bar mod !".to_owned())
     }
 }

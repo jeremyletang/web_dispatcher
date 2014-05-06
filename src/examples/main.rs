@@ -30,27 +30,30 @@ extern crate route_macros;
 use std::any::Any;
 use collections::HashMap;
 
-use web_dispatcher::response::Resp;
 use web_dispatcher::Dispatcher;
+use web_dispatcher::tools::WebParams;
+use web_dispatcher::response::{Resp, Filled};
 
 mod foo;
 
 #[method = "POST"]
 #[route = "/hello/main/POST"]
 pub fn hello_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
-    println!("hello from root mod !");
-    Resp::no()
+    Filled("hello from root mod !".to_owned())
 }
 
 #[route = "/hello/main"]
-pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
-    println!("hello from root mod too !");
-    Resp::no()
+pub fn hello_route2(p: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
+    Filled(format!("Your name is: {}, and your age is: {} !",
+           p.to_string("name").unwrap(),
+           p.to_int("age").unwrap()))
 }
 
 fn main() {
+    let mut params = HashMap::new();
+    params.insert("name".to_owned(), "Paul".to_owned());
+    params.insert("age".to_owned(), "42".to_owned());
     let mut dispatcher = Dispatcher::<~str>::new(routes!());
-    dispatcher.run("/hello/main", HashMap::new());
-    let r = routes!();
-    println!("{:?}", r);
+    let return_value = dispatcher.run("/hello/main", params);
+    println!("{}", return_value.unwrap())
 }

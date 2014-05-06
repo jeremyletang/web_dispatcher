@@ -46,7 +46,7 @@ pub trait WebParams {
     fn to_f32(&self, &str)  -> Option<f32>;
     fn to_f64(&self, &str)  -> Option<f64>;
     fn to_bool(&self, &str) -> Option<bool>;
-    fn to_str(&self, &str)  -> Option<~str>;
+    fn to_string(&self, &str)  -> Option<~str>;
 }
 
 macro_rules! to_type(
@@ -72,7 +72,7 @@ impl WebParams for HashMap<~str, ~str> {
     fn to_f32(&self, param_name: &str)  -> Option<f32>  { to_type!(param_name) }
     fn to_f64(&self, param_name: &str)  -> Option<f64>  { to_type!(param_name) }
     fn to_bool(&self, param_name: &str) -> Option<bool> { to_type!(param_name) }
-    fn to_str(&self, param_name: &str)  -> Option<~str> { to_type!(param_name) }
+    fn to_string(&self, param_name: &str)  -> Option<~str> { to_type!(param_name) }
 }
 
 /// The trait which should be implemented by structs who can product the user_params

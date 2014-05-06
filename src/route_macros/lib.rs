@@ -92,7 +92,7 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> ~MacResult 
         quote_expr!(&*cx, ($p, $s, $m))
     }).collect();
     let v = create_slice_expr(v, sp);
-    MacExpr::new(quote_expr!(cx, $v.to_owned()))
+    MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
 }
 
 // create the path expression
