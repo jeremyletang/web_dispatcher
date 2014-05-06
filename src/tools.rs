@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! Some utils types for routes and responses
+//! Some tools types for routes and responses
 
 use std::any::Any;
 
@@ -36,6 +36,50 @@ pub trait Producer {
     fn get(&self) -> ~Any;
 }
 
+/// Retrieve a given type from web params easily
+pub trait WebParams {
+    fn to_int(&self, &str)  -> Option<int>;
+    fn to_i8(&self, &str)   -> Option<i8>;
+    fn to_i16(&self, &str)  -> Option<i16>;
+    fn to_i32(&self, &str)  -> Option<i32>;
+    fn to_i64(&self, &str)  -> Option<i64>;
+    fn to_uint(&self, &str) -> Option<uint>;
+    fn to_u8(&self, &str)   -> Option<u8>;
+    fn to_u16(&self, &str)  -> Option<u16>;
+    fn to_u32(&self, &str)  -> Option<u32>;
+    fn to_u64(&self, &str)  -> Option<u64>;
+    fn to_f32(&self, &str)  -> Option<f32>;
+    fn to_f64(&self, &str)  -> Option<f64>;
+    fn to_bool(&self, &str) -> Option<bool>;
+    fn to_str(&self, &str)  -> Option<~str>;
+}
+
+macro_rules! to_type(
+    ($p:expr) => (
+        match self.find(&$p.to_owned()) {
+            Some(pp) => from_str(*pp),
+            None => None
+        }
+    )
+)
+
+impl WebParams for HashMap<~str, ~str> {
+    fn to_int(&self, param_name: &str)  -> Option<int>  { to_type!(param_name) }
+    fn to_i8(&self, param_name: &str)   -> Option<i8>   { to_type!(param_name) }
+    fn to_i16(&self, param_name: &str)  -> Option<i16>  { to_type!(param_name) }
+    fn to_i32(&self, param_name: &str)  -> Option<i32>  { to_type!(param_name) }
+    fn to_i64(&self, param_name: &str)  -> Option<i64>  { to_type!(param_name) }
+    fn to_uint(&self, param_name: &str) -> Option<uint> { to_type!(param_name) }
+    fn to_u8(&self, param_name: &str)   -> Option<u8>   { to_type!(param_name) }
+    fn to_u16(&self, param_name: &str)  -> Option<u16>  { to_type!(param_name) }
+    fn to_u32(&self, param_name: &str)  -> Option<u32>  { to_type!(param_name) }
+    fn to_u64(&self, param_name: &str)  -> Option<u64>  { to_type!(param_name) }
+    fn to_f32(&self, param_name: &str)  -> Option<f32>  { to_type!(param_name) }
+    fn to_f64(&self, param_name: &str)  -> Option<f64>  { to_type!(param_name) }
+    fn to_bool(&self, param_name: &str) -> Option<bool> { to_type!(param_name) }
+    fn to_str(&self, param_name: &str)  -> Option<~str> { to_type!(param_name) }
+}
+
 #[doc(hidden)]
 pub struct Dummy;
 
@@ -44,6 +88,7 @@ pub struct DummyProducer;
 
 impl Producer for DummyProducer {
     fn get(&self) -> ~Any {
-        ~Dummy as ~Any
+        box Dummy as ~Any
     }
 }
+

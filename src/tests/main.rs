@@ -52,11 +52,4 @@ pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
 fn main() {
     let mut dispatcher = Dispatcher::new(get_routes!());
     dispatcher.run("/hello/main", HashMap::new());
-    // println!("Routes vec type: {:?}", routes);
-    // for &(f, s, m) in routes.iter() {
-    //     println!("For route: {} with method {}", s, m);
-    //     f(HashMap::new(), box 42);
-    // }
 }
-// ~[(fn(collections::hashmap::HashMap<~str,~str>, ~std::any::Any<no-bounds>) -> web_dispatcher::response::Resp,~str,~str)]
-// ~[(fn(collections::hashmap::HashMap<~str,~str>, ~std::any::Any<no-bounds>) -> web_dispatcher::response::Resp,&'static str,&'static str)]

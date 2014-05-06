@@ -38,7 +38,7 @@ impl Dispatcher {
     pub fn new(routes: ~[(RoutesFnType, &'static str, &'static str)]) -> Dispatcher {
         Dispatcher {
             routes: routes,
-            producer: ~DummyProducer
+            producer: box DummyProducer
         }
     }
 
