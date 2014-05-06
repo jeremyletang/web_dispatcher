@@ -16,7 +16,7 @@ The syntax extension provide new attributes to retrieve data at compile time:
 example
 =======
 
-Here is a simple a example of what am i doing:
+Here is a simple example of what am i doing:
 
 ```Rust
 //! simple routes example
@@ -40,11 +40,11 @@ pub fn default(p: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
 }
 
 fn main() {
-    // Create a fill the webparams
+    // Create and fill the webparams
     let mut params = HashMap::new();
     params.insert("name".to_owned(), "Paul".to_owned());
 
-    // Create the web_dispatcher initialized with routes
+    // Create the web_dispatcher and initialize it with routes
     let mut dispatcher = Dispatcher::<~str>::new(routes!());
 
     // Dispatch and store the result
@@ -59,8 +59,8 @@ fn main() {
 limits
 ======
 
-For the moment you can use only on prototype for your all programm when you use `libroute_macros`.
+For the moment you can use only one prototype for all your programm when you use `libroute_macros`.
 
-The web dispatcher is really naive for the moment, and can only handle route using this kinds
+The web dispatcher is really naive for the moment, and can only handle routes using this kinds
 of functons: `fn(HashMap<~str, ~str>, ~Any) -> Resp<T>`.
 
