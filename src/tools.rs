@@ -29,3 +29,21 @@ use response::Resp;
 
 /// The type of a route function
 pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> Resp;
+
+/// The trait which should be implemented by structs who can product the user_params
+pub trait Producer {
+    /// Return a new instance of the user_params
+    fn get(&self) -> ~Any;
+}
+
+#[doc(hidden)]
+pub struct Dummy;
+
+#[doc(hidden)]
+pub struct DummyProducer;
+
+impl Producer for DummyProducer {
+    fn get(&self) -> ~Any {
+        ~Dummy as ~Any
+    }
+}

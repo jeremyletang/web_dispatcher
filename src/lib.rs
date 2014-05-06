@@ -43,7 +43,7 @@ pub use dispatcher::Dispatcher;
 
 #[doc(hidden)]
 pub mod macros;
-pub mod route_utils;
+pub mod tools;
 pub mod response;
 mod method;
 mod dispatcher;

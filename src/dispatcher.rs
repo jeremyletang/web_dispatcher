@@ -24,22 +24,31 @@
 
 #![allow(unused_variable)]
 
-use std::any::Any;
 use collections::HashMap;
+use tools::{RoutesFnType, DummyProducer, Producer};
 
 use response::Resp;
 
-pub struct Dispatcher;
+pub struct Dispatcher {
+    routes: ~[(RoutesFnType, &'static str, &'static str)],
+    producer: ~Producer
+}
 
 impl Dispatcher {
-    pub fn new() -> Dispatcher {
-        Dispatcher
+    pub fn new(routes: ~[(RoutesFnType, &'static str, &'static str)]) -> Dispatcher {
+        Dispatcher {
+            routes: routes,
+            producer: ~DummyProducer
+        }
+    }
+
+    pub fn set_producer(&mut self, param_producer: ~Producer) {
+        self.producer = param_producer;
     }
 
     pub fn run(&mut self,
-               route: ~str,
-               web_params: HashMap<~str, ~str>,
-               user_param: ~Any)
+               route: &str,
+               web_params: HashMap<~str, ~str>)
                -> Resp {
         Resp::no()
     }

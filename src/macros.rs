@@ -70,7 +70,7 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> ~MacResult 
         quote_expr!(&*cx, ($p, $s, $m))
     }).collect();
     let v = create_slice_expr(v, sp);
-    MacExpr::new(quote_expr!(cx, $v))
+    MacExpr::new(quote_expr!(cx, $v.to_owned()))
 }
 
 // create the path expression
@@ -124,6 +124,8 @@ fn expand_route(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -
     }
 }
 
+
+// FIXME: improve this or totally remove it
 fn function_attribute_are_valid(fn_decl: @FnDecl) -> bool {
     if fn_decl.inputs.len() != 2 {
         false
