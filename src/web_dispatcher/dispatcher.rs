@@ -20,31 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! A web dispatcher library for Rust
+//! The web dispatcher
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
-#![desc = "web dispatcher for Rust"]
-#![license = "mit"]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
-#![experimental]
-#![allow(dead_code)]
-#![allow(missing_doc)]
-#![feature(macro_registrar, managed_boxes, quote)]
-#![feature(macro_rules)]
-#![feature(struct_variant)]
+#![allow(unused_variable)]
 
-extern crate collections;
-extern crate syntax;
-extern crate regex;
-extern crate regex_macros;
+use collections::HashMap;
+use tools::{RoutesFnType, DummyProducer, Producer};
 
-pub use dispatcher::Dispatcher;
+use response::Resp;
 
-#[doc(hidden)]
-pub mod macros;
-pub mod tools;
-pub mod response;
-mod method;
-mod dispatcher;
+pub struct Dispatcher {
+    routes: ~[(RoutesFnType, &'static str, &'static str)],
+    producer: ~Producer
+}
 
+impl Dispatcher {
+    pub fn new(routes: ~[(RoutesFnType, &'static str, &'static str)]) -> Dispatcher {
+        Dispatcher {
+            routes: routes,
+            producer: box DummyProducer
+        }
+    }
+
+    pub fn set_producer(&mut self, param_producer: ~Producer) {
+        self.producer = param_producer;
+    }
+
+    pub fn run(&mut self,
+               route: &str,
+               web_params: HashMap<~str, ~str>)
+               -> Resp {
+        for &(f, s, m) in self.routes.iter() {
+            f(HashMap::new(), self.producer.get_new());
+        }
+        Resp::no()
+    }
+}

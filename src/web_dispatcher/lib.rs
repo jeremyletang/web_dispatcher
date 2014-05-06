@@ -20,36 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! The web dispatcher
+//! A web dispatcher library for Rust
 
-#![allow(unused_variable)]
+#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
+#![desc = "web dispatcher for Rust"]
+#![license = "mit"]
+#![crate_type = "rlib"]
+#![crate_type = "dylib"]
+#![experimental]
+#![allow(missing_doc)]
+#![feature(macro_rules)]
 
-use collections::HashMap;
-use tools::{RoutesFnType, DummyProducer, Producer};
+extern crate collections;
+extern crate regex;
+extern crate regex_macros;
 
-use response::Resp;
+pub use dispatcher::Dispatcher;
 
-pub struct Dispatcher {
-    routes: ~[(RoutesFnType, &'static str, &'static str)],
-    producer: ~Producer
-}
-
-impl Dispatcher {
-    pub fn new(routes: ~[(RoutesFnType, &'static str, &'static str)]) -> Dispatcher {
-        Dispatcher {
-            routes: routes,
-            producer: box DummyProducer
-        }
-    }
-
-    pub fn set_producer(&mut self, param_producer: ~Producer) {
-        self.producer = param_producer;
-    }
-
-    pub fn run(&mut self,
-               route: &str,
-               web_params: HashMap<~str, ~str>)
-               -> Resp {
-        Resp::no()
-    }
-}
+pub mod tools;
+pub mod response;
+mod method;
+mod dispatcher;

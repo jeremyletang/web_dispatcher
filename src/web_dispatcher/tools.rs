@@ -30,12 +30,6 @@ use response::Resp;
 /// The type of a route function
 pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> Resp;
 
-/// The trait which should be implemented by structs who can product the user_params
-pub trait Producer {
-    /// Return a new instance of the user_params
-    fn get(&self) -> ~Any;
-}
-
 /// Retrieve a given type from web params easily
 pub trait WebParams {
     fn to_int(&self, &str)  -> Option<int>;
@@ -80,6 +74,12 @@ impl WebParams for HashMap<~str, ~str> {
     fn to_str(&self, param_name: &str)  -> Option<~str> { to_type!(param_name) }
 }
 
+/// The trait which should be implemented by structs who can product the user_params
+pub trait Producer {
+    /// Return a new instance of the user_params
+    fn get_new(&self) -> ~Any;
+}
+
 #[doc(hidden)]
 pub struct Dummy;
 
@@ -87,7 +87,7 @@ pub struct Dummy;
 pub struct DummyProducer;
 
 impl Producer for DummyProducer {
-    fn get(&self) -> ~Any {
+    fn get_new(&self) -> ~Any {
         box Dummy as ~Any
     }
 }

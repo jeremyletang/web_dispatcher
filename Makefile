@@ -20,11 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-all: web_dispatcher tests
+all: route_macros web_dispatcher tests
+
+route_macros:
+	mkdir -p lib
+	rustc --out-dir=lib src/route_macros/lib.rs
 
 web_dispatcher:
 	mkdir -p lib
-	rustc --out-dir=lib src/lib.rs
+	rustc --out-dir=lib src/web_dispatcher/lib.rs -L ./lib
 
 docs:
 	mkdir -p doc
@@ -37,3 +41,4 @@ tests:
 clean:
 	rm -rf lib
 	rm -rf doc
+	rm -rf bin

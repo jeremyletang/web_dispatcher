@@ -23,9 +23,9 @@
 #![feature(phase)]
 
 extern crate collections;
-
-#[phase(syntax, link)]
 extern crate web_dispatcher;
+#[phase(syntax, link)]
+extern crate route_macros;
 
 use std::any::Any;
 use collections::HashMap;
@@ -50,6 +50,6 @@ pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
 }
 
 fn main() {
-    let mut dispatcher = Dispatcher::new(get_routes!());
+    let mut dispatcher = Dispatcher::new(routes!());
     dispatcher.run("/hello/main", HashMap::new());
 }

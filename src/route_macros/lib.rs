@@ -22,6 +22,17 @@
 
 //! A syntax extension to handle route attributes
 
+#![crate_id = "github.com/JeremyLetang/web_dispatcher#route_macros:0.0.1"]
+#![desc = "route macros for Rust"]
+#![license = "mit"]
+#![crate_type = "rlib"]
+#![crate_type = "dylib"]
+#![experimental]
+#![allow(missing_doc)]
+#![feature(macro_registrar, managed_boxes, quote)]
+
+extern crate syntax;
+
 use std::local_data;
 
 use syntax::ast;
@@ -55,7 +66,7 @@ fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str,~str)> {
 pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
     register(token::intern("method"), ItemModifier(expand_method));
-    register(token::intern("get_routes"),
+    register(token::intern("routes"),
              NormalTT(~BasicMacroExpander {
                 expander: expand_get_routes,
                 span: None,
