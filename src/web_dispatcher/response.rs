@@ -20,61 +20,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-pub enum Resp {
-    Filled(RespContent),
+use std::default::Default;
+
+pub enum Resp<T> {
+    Filled(T),
     NoResp,
     InternalError(~str)
 }
 
-impl Resp {
-    pub fn no() -> Resp {
+impl<T> Resp<T> {
+    pub fn no() -> Resp<T> {
         NoResp
     }
 
-    pub fn empty() -> Resp {
-        Filled(RespContent::empty())
-    }
-
-    pub fn internal_error(error: ~str) -> Resp {
+    pub fn internal_error(error: ~str) -> Resp<T> {
         InternalError(error)
     }
 }
 
-pub struct RespContent {
-    pub header: Header,
-    pub body: Body
-}
-
-impl RespContent {
-    pub fn empty() -> RespContent {
-        RespContent {
-            header: Header::empty(),
-            body: Body::empty()
-        }
+impl<T: Default> Default for Resp<T> {
+    fn default() -> Resp<T> {
+        Filled(Default::default())
     }
-}
-
-pub struct Header {
-    pub s: ~str
-}
-
-
-impl Header {
-    pub fn empty() -> Header {
-        Header {
-            s: "".to_owned()
-        }
-    }
-}
-
-impl Body {
-    pub fn empty() -> Body {
-        Body {
-            s: "".to_owned()
-        }
-    }
-}
-
-pub struct Body {
-    pub s: ~str
 }

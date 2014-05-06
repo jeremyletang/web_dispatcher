@@ -37,19 +37,20 @@ mod foo;
 
 #[method = "POST"]
 #[route = "/hello/main/POST"]
-pub fn hello_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+pub fn hello_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
     println!("hello from root mod !");
     Resp::no()
 }
 
-#[method = "GET"]
 #[route = "/hello/main"]
-pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp {
+pub fn hello_route2(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
     println!("hello from root mod too !");
     Resp::no()
 }
 
 fn main() {
-    let mut dispatcher = Dispatcher::new(routes!());
+    let mut dispatcher = Dispatcher::<~str>::new(routes!());
     dispatcher.run("/hello/main", HashMap::new());
+    let r = routes!();
+    println!("{:?}", r);
 }

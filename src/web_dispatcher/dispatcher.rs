@@ -24,32 +24,33 @@
 
 #![allow(unused_variable)]
 
+use std::default::Default;
 use collections::HashMap;
-use tools::{RoutesFnType, DummyProducer, Producer};
 
 use response::Resp;
+use tools::{RoutesFnType, DummyProducer, Producer};
 
-pub struct Dispatcher {
-    routes: ~[(RoutesFnType, &'static str, &'static str)],
-    producer: ~Producer
+pub struct Dispatcher<T, U = DummyProducer> {
+    routes: ~[(RoutesFnType<T>, &'static str, &'static str)],
+    producer: U
 }
 
-impl Dispatcher {
-    pub fn new(routes: ~[(RoutesFnType, &'static str, &'static str)]) -> Dispatcher {
+impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
+    pub fn new(routes: ~[(RoutesFnType<T>, &'static str, &'static str)]) -> Dispatcher<T, U> {
         Dispatcher {
             routes: routes,
-            producer: box DummyProducer
+            producer: Default::default()
         }
     }
 
-    pub fn set_producer(&mut self, param_producer: ~Producer) {
-        self.producer = param_producer;
+    pub fn set_producer(&mut self, param_producer: U) {
+        self.producer = param_producer
     }
 
     pub fn run(&mut self,
                route: &str,
                web_params: HashMap<~str, ~str>)
-               -> Resp {
+               -> Resp<T> {
         for &(f, s, m) in self.routes.iter() {
             f(HashMap::new(), self.producer.get_new());
         }

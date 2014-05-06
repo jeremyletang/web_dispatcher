@@ -60,8 +60,6 @@ use syntax::ext::base::{ExtCtxt,
                         ItemModifier,
                         MacExpr};
 
-
-
 // Store routes in a local data (vector of path ident, associated route, method as a string)
 static routes: local_data::Key<Vec<(Vec<Ident>, ~str, ~str)>> = &local_data::Key;
 
@@ -121,7 +119,7 @@ fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> @Expr {
     }
 }
 
-// create a slice from the vector of (path / routes)
+// create a slice from the vector of (path / routes / method)
 fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
     @Expr {
         id: ast::DUMMY_NODE_ID,

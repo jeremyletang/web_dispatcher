@@ -23,12 +23,13 @@
 //! Some tools types for routes and responses
 
 use std::any::Any;
+use std::default::Default;
 
 use collections::HashMap;
 use response::Resp;
 
 /// The type of a route function
-pub type RoutesFnType = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> Resp;
+pub type RoutesFnType<T> = fn(web_params: HashMap<~str, ~str>, db: ~Any) -> Resp<T>;
 
 /// Retrieve a given type from web params easily
 pub trait WebParams {
@@ -92,3 +93,8 @@ impl Producer for DummyProducer {
     }
 }
 
+impl Default for DummyProducer {
+    fn default() -> DummyProducer {
+        DummyProducer
+    }
+}
