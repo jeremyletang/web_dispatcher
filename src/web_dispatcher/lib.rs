@@ -37,8 +37,11 @@ extern crate regex;
 extern crate regex_macros;
 
 pub use dispatcher::Dispatcher;
+pub use tools::{WebParams, RoutesFnType, Producer};
+pub use method::{Method, Get, Post};
+pub use response::{Resp, Filled, NoResp, InternalError, RoutingError};
 
-pub mod tools;
-pub mod response;
+mod tools;
+mod response;
 mod method;
 mod dispatcher;

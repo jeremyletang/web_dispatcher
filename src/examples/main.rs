@@ -30,9 +30,7 @@ extern crate route_macros;
 use std::any::Any;
 use collections::HashMap;
 
-use web_dispatcher::Dispatcher;
-use web_dispatcher::tools::WebParams;
-use web_dispatcher::response::{Resp, Filled};
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled};
 
 mod foo;
 

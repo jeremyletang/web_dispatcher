@@ -22,11 +22,23 @@
 
 //! Available methods for web requests
 
+use std::from_str::FromStr;
+
 /// Available methods for web requests
-#[deriving(Clone, Show, Eq)]
+#[deriving(Clone, Show, Eq, TotalEq, Hash)]
 pub enum Method {
     /// GET method
     Get,
     /// POST method
     Post
+}
+
+impl FromStr for Method {
+    fn from_str(s: &str) -> Option<Method> {
+        match s {
+            "GET"  => Some(Get),
+            "POST" => Some(Post),
+            _      => None
+        }
+    }
 }

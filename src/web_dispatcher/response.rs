@@ -22,20 +22,25 @@
 
 use std::default::Default;
 
+/// Responses returned by the web dispatcher
 pub enum Resp<T> {
+    /// The route is valid and the functon has filled the response with data
     Filled(T),
+    /// The route is valid but the function don't returned nothing
     NoResp,
+    /// The route is valid but an error has occured inside the user function
     InternalError(~str),
+    /// The route is not valid this error is returned by the web dispatcher
     RoutingError(~str)
 }
 
 impl<T> Resp<T> {
-    pub fn no() -> Resp<T> {
-        NoResp
-    }
-
-    pub fn internal_error(error: ~str) -> Resp<T> {
-        InternalError(error)
+    pub fn is_success(&self) -> bool {
+        match *self {
+            Filled(_)
+            | NoResp => true,
+            _        => false
+        }
     }
 
     pub fn unwrap(self) -> T {
