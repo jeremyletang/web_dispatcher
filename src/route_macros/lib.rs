@@ -78,14 +78,14 @@ pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
     register(token::intern("method"), ItemModifier(expand_method));
     register(token::intern("routes"),
-             NormalTT(~BasicMacroExpander {
+             NormalTT(box BasicMacroExpander {
                 expander: expand_get_routes,
                 span: None,
              },
              None));
 }
 
-fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> ~MacResult {
+fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResult> {
     let v = local_data_get_or_init();
     let v = v.iter().map(|&(ref f, ref s, ref m)| {
         let p = create_func_path_expr(f, sp);

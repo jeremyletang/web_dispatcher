@@ -36,12 +36,12 @@ mod foo;
 
 #[method = "POST"]
 #[route = "/hello/main/POST"]
-pub fn hello_route(_: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
+pub fn hello_route(_: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
     Filled("hello from root mod !".to_owned())
 }
 
 #[route = "/hello/main"]
-pub fn hello_route2(p: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
+pub fn hello_route2(p: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
     Filled(format!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),
            p.to_int("age").unwrap()))
