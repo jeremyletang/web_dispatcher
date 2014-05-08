@@ -64,12 +64,10 @@ use syntax::ext::base::{ExtCtxt,
 static routes: local_data::Key<Vec<(Vec<Ident>, ~str, ~str)>> = &local_data::Key;
 
 fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str,~str)> {
-    local_data::get(routes, |d| {
-        match d {
-            Some(v) =>  v.clone(),
-            None => Vec::new()
-        }
-    })
+    match routes.get() {
+        Some(v) =>  v.clone(),
+        None => Vec::new()
+    }
 }
 
 #[doc(hidden)]
@@ -188,7 +186,7 @@ fn insert_route(cx: &mut ExtCtxt,
         } else { true }
     }).collect();
     v.push((vec_ident, route_attr, method));
-    local_data::set(routes, v);
+    routes.replace(Some(v));
 }
 
 // check if a route is already defined for an other function
@@ -259,5 +257,5 @@ fn insert_method(cx: &mut ExtCtxt,
         } else { true }
     }).collect();
     v.push((vec_ident, route, method_attr));
-    local_data::set(routes, v);
+    routes.replace(Some(v));
 }
