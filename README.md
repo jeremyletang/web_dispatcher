@@ -48,9 +48,9 @@ fn main() {
     let mut dispatcher = Dispatcher::<StrBuf>::new(routes!());
 
     // Dispatch and store the result
-    let return_value = dispatcher.run("/some/route", HashMap::new()).unwrap();
+    let return_value = dispatcher.run("/some/route", HashMap::new());
 
-    println!("{}", return_value)
+    println!("{}", return_value.unwrap())
 }
 
 ```
@@ -62,5 +62,5 @@ limits
 For the moment you can use only one prototype for all your programm when you use `libroute_macros`.
 
 The web dispatcher is really naive for the moment, and can only handle routes using this kinds
-of functions: `fn(HashMap<~str, ~str>, ~Any) -> Resp<T>`.
+of functions: `fn(HashMap<StrBuf, StrBuf>, Box<Amy>) -> Resp<T>`.
 
