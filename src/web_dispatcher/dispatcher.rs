@@ -58,7 +58,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
                           -> Resp<T> {
         match self.simple_hash_find_route(route, &web_params, method) {
             Some(r) => r,
-            None    => RoutingError(format!("route: {}, don't exist", route))
+            None    => RoutingError(format_strbuf!("route: {}, don't exist", route))
         }
     }
 

@@ -35,17 +35,17 @@ use web_dispatcher::tools::WebParams;
 use web_dispatcher::response::{Resp, Filled};
 
 #[route = "/some/route"]
-pub fn default(p: HashMap<StrBuf, StrBuf>, _: ~Any) -> Resp<~str> {
-    Filled(format!("The name is: {}", p.to_string()))
+pub fn default(p: HashMap<StrBuf, StrBuf>, _: ~Any) -> Resp<StrBuf> {
+    Filled(format_strbuf!("The name is: {}", p.to_strbuf()))
 }
 
 fn main() {
     // Create and fill the webparams
     let mut params = HashMap::new();
-    params.insert(StrBuf::from_str("name"), StrBuf::from_str("Paul");
+    params.insert("name".to_strbuf(), "Paul".to_strbuf());
 
     // Create the web_dispatcher and initialize it with routes
-    let mut dispatcher = Dispatcher::<~str>::new(routes!());
+    let mut dispatcher = Dispatcher::<StrBuf>::new(routes!());
 
     // Dispatch and store the result
     let return_value = dispatcher.run("/some/route", HashMap::new()).unwrap();

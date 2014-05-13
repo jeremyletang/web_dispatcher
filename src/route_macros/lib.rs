@@ -61,9 +61,9 @@ use syntax::ext::base::{ExtCtxt,
                         MacExpr};
 
 // Store routes in a local data (vector of path ident, associated route, method as a string)
-static routes: local_data::Key<Vec<(Vec<Ident>, ~str, ~str)>> = &local_data::Key;
+static routes: local_data::Key<Vec<(Vec<Ident>, StrBuf, StrBuf)>> = &local_data::Key;
 
-fn local_data_get_or_init() -> Vec<(Vec<Ident>, ~str,~str)> {
+fn local_data_get_or_init() -> Vec<(Vec<Ident>, StrBuf, StrBuf)> {
     match routes.get() {
         Some(v) =>  v.clone(),
         None => Vec::new()
@@ -87,7 +87,9 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResu
     let v = local_data_get_or_init();
     let v = v.iter().map(|&(ref f, ref s, ref m)| {
         let p = create_func_path_expr(f, sp);
-        quote_expr!(&*cx, ($p, $s, $m))
+        let s_ = s.as_slice();
+        let m_ = m.as_slice();
+        quote_expr!(&*cx, ($p, $s_, $m_))
     }).collect();
     let v = create_slice_expr(v, sp);
     MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
@@ -153,7 +155,7 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
             match l.node {
                 LitStr(ref s, _) => {
                     // check if the route already exist.
-                    let route_attr = s.get().to_owned();
+                    let route_attr = s.get().to_strbuf();
                     if !route_already_exist(&route_attr) {
                         insert_route(cx, item, route_attr);
                     } else {
@@ -171,15 +173,15 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
 // insert the route in the local data
 fn insert_route(cx: &mut ExtCtxt,
                 item: @Item,
-                route_attr: ~str) {
+                route_attr: StrBuf) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
     // concatenate the name of the function
     vec_ident.push(item.ident);
     // insert the route and save
-    let mut method = "GET".to_owned();
-    let mut v: Vec<(Vec<Ident>, ~str, ~str)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
+    let mut method = "GET".to_strbuf();
+    let mut v: Vec<(Vec<Ident>, StrBuf, StrBuf)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
         if v_i == &vec_ident {
             method = m.clone();
             false
@@ -190,7 +192,7 @@ fn insert_route(cx: &mut ExtCtxt,
 }
 
 // check if a route is already defined for an other function
-fn route_already_exist(route: &~str) -> bool {
+fn route_already_exist(route: &StrBuf) -> bool {
     let v = local_data_get_or_init();
     v.iter().fold(false, |b, &(_, ref s, _)| { b || s == route })
 }
@@ -218,7 +220,7 @@ fn get_method_attr_value(cx: &mut ExtCtxt,
                 LitStr(ref s, _) => {
                     let method_attr = s.get();
                     if is_method_attribute_valid(method_attr) {
-                        insert_method(cx, item, method_attr.to_owned());
+                        insert_method(cx, item, method_attr.to_strbuf());
                     } else {
                         cx.span_err(sp, "this method attribut don't exist. Here is a list of \
                             available attribute: [GET, POST]")
@@ -242,15 +244,15 @@ fn is_method_attribute_valid(attr: &str) -> bool {
 // insert the method in the local data
 fn insert_method(cx: &mut ExtCtxt,
                  item: @Item,
-                 method_attr: ~str) {
+                 method_attr: StrBuf) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
     // concatenate the name of the function
     vec_ident.push(item.ident);
     // insert the route and save
-    let mut route = "".to_owned();
-    let mut v: Vec<(Vec<Ident>, ~str, ~str)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
+    let mut route = "".to_strbuf();
+    let mut v: Vec<(Vec<Ident>, StrBuf, StrBuf)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
         if v_i == &vec_ident {
             route = r.clone();
             false

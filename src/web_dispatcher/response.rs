@@ -29,9 +29,9 @@ pub enum Resp<T> {
     /// The route is valid but the function don't returned nothing
     NoResp,
     /// The route is valid but an error has occured inside the user function
-    InternalError(~str),
+    InternalError(StrBuf),
     /// The route is not valid this error is returned by the web dispatcher
-    RoutingError(~str)
+    RoutingError(StrBuf)
 }
 
 impl<T> Resp<T> {
