@@ -1,4 +1,4 @@
-web_dispatcher
+web_dispatcher [![Build Status](https://travis-ci.org/jeremyletang/web_dispatcher.svg?branch=master)](https://travis-ci.org/jeremyletang/web_dispatcher)
 ==============
 
 Experiments with syntax extensions and web routes dispatch
@@ -35,14 +35,14 @@ use web_dispatcher::tools::WebParams;
 use web_dispatcher::response::{Resp, Filled};
 
 #[route = "/some/route"]
-pub fn default(p: HashMap<~str, ~str>, _: ~Any) -> Resp<~str> {
+pub fn default(p: HashMap<StrBuf, StrBuf>, _: ~Any) -> Resp<~str> {
     Filled(format!("The name is: {}", p.to_string()))
 }
 
 fn main() {
     // Create and fill the webparams
     let mut params = HashMap::new();
-    params.insert("name".to_owned(), "Paul".to_owned());
+    params.insert(StrBuf::from_str("name"), StrBuf::from_str("Paul");
 
     // Create the web_dispatcher and initialize it with routes
     let mut dispatcher = Dispatcher::<~str>::new(routes!());
@@ -62,5 +62,5 @@ limits
 For the moment you can use only one prototype for all your programm when you use `libroute_macros`.
 
 The web dispatcher is really naive for the moment, and can only handle routes using this kinds
-of functons: `fn(HashMap<~str, ~str>, ~Any) -> Resp<T>`.
+of functions: `fn(HashMap<~str, ~str>, ~Any) -> Resp<T>`.
 
