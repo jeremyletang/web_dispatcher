@@ -33,7 +33,7 @@ use tools::{RoutesFnType, DummyProducer, Producer};
 
 /// The web dispatcher
 pub struct Dispatcher<T, U = DummyProducer> {
-    routes: HashMap<(~str, Method), RoutesFnType<T>>,
+    routes: HashMap<(StrBuf, Method), RoutesFnType<T>>,
     producer: U
 }
 
@@ -41,7 +41,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
     pub fn new(routes: Vec<(RoutesFnType<T>, &str, &str)>) -> Dispatcher<T, U> {
         Dispatcher {
             routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m)| {
-                h.insert((r.to_owned(), from_str(m).unwrap()), f); h
+                h.insert((r.to_strbuf(), from_str(m).unwrap()), f); h
             }),
             producer: Default::default()
         }
@@ -53,7 +53,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
     pub fn run_for_method(&mut self,
                           route: &str,
-                          web_params: HashMap<~str, ~str>,
+                          web_params: HashMap<StrBuf, StrBuf>,
                           method: Method)
                           -> Resp<T> {
         match self.simple_hash_find_route(route, &web_params, method) {
@@ -64,17 +64,17 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
     pub fn run(&mut self,
                route: &str,
-               web_params: HashMap<~str, ~str>)
+               web_params: HashMap<StrBuf, StrBuf>)
                -> Resp<T> {
         self.run_for_method(route, web_params, Get)
     }
 
     fn simple_hash_find_route(&mut self,
                              route: &str,
-                             web_params: &HashMap<~str, ~str>,
+                             web_params: &HashMap<StrBuf, StrBuf>,
                              method: Method)
                              -> Option<Resp<T>> {
-        match self.routes.find(&(route.to_owned(), method)) {
+        match self.routes.find(&(route.to_strbuf(), method)) {
             Some(&f) => Some(f(web_params.clone(), self.producer.get_new())),
             None     => None
         }

@@ -25,7 +25,7 @@ use collections::HashMap;
 use web_dispatcher::{Resp, Filled};
 
 #[route = "/hello/foo"]
-pub fn hello_route3(_: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
+pub fn hello_route3(_: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<~str> {
     Filled("Hello from foo mod !".to_owned())
 }
 
@@ -35,7 +35,7 @@ pub mod bar {
     use web_dispatcher::{Resp, Filled};
 
     #[route = "/hello/foo/bar"]
-    pub fn hello_route4(_: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
+    pub fn hello_route4(_: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<~str> {
         Filled("hello from foo::bar mod !".to_owned())
     }
 }

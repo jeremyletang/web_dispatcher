@@ -36,12 +36,12 @@ mod foo;
 
 #[method = "POST"]
 #[route = "/hello/main/POST"]
-pub fn hello_route(_: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
+pub fn hello_route(_: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<~str> {
     Filled("hello from root mod !".to_owned())
 }
 
 #[route = "/hello/main"]
-pub fn hello_route2(p: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
+pub fn hello_route2(p: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<~str> {
     Filled(format!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),
            p.to_int("age").unwrap()))
@@ -49,8 +49,8 @@ pub fn hello_route2(p: HashMap<~str, ~str>, _: Box<Any>) -> Resp<~str> {
 
 fn main() {
     let mut params = HashMap::new();
-    params.insert("name".to_owned(), "Paul".to_owned());
-    params.insert("age".to_owned(), "42".to_owned());
+    params.insert(StrBuf::from_str("name"), StrBuf::from_str("Paul"));
+    params.insert(StrBuf::from_str("age"), StrBuf::from_str("42"));
     let mut dispatcher = Dispatcher::<~str>::new(routes!());
     let return_value = dispatcher.run("/hello/main", params);
     println!("{}", return_value.unwrap())
