@@ -30,7 +30,15 @@ pub enum Method {
     /// GET method
     Get,
     /// POST method
-    Post
+    Post,
+    /// HEAD method
+    Head,
+    /// DELETE method
+    Delete,
+    /// PUT method
+    Put,
+    /// CONNECT method
+    Connect
 }
 
 impl FromStr for Method {
@@ -38,6 +46,10 @@ impl FromStr for Method {
         match s {
             "GET"  => Some(Get),
             "POST" => Some(Post),
+            "HEAD" => Some(Head),
+            "DELETE" => Some(Delete),
+            "PUT" => Some(Put),
+            "CONNECT" => Some(Connect),
             _      => None
         }
     }

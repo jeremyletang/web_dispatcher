@@ -40,7 +40,7 @@ pub fn hello_route(_: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<StrBuf> {
     Filled("hello from root mod !".to_strbuf())
 }
 
-#[route = "/hello/main"]
+#[route = "/hello/main/"]
 pub fn hello_route2(p: HashMap<StrBuf, StrBuf>, _: Box<Any>) -> Resp<StrBuf> {
     Filled(format_strbuf!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),

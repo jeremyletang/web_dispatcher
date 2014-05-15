@@ -28,10 +28,11 @@
 #![crate_type = "rlib"]
 #![crate_type = "dylib"]
 #![experimental]
-#![allow(missing_doc)]
+#![allow(missing_doc, unused_variable)]
 #![feature(macro_registrar, managed_boxes, quote)]
 
 extern crate syntax;
+extern crate url;
 
 use std::local_data;
 
@@ -153,12 +154,18 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
         MetaNameValue(_, ref l) => {
             match l.node {
                 LitStr(ref s, _) => {
-                    // check if the route already exist.
-                    let route_attr = s.get().to_strbuf();
-                    if !route_already_exist(&route_attr) {
-                        insert_route(cx, item, route_attr);
+                    // check if the route is a valid url::Path
+                    let validate: Option<url::Path> = from_str(s.get());
+                    if validate.is_some() {
+                        // check if the route already exist.
+                        let route_attr = s.get().to_strbuf();
+                        if !route_already_exist(&route_attr) {
+                            insert_route(cx, item, route_attr);
+                        } else {
+                            cx.span_err(sp, "this route already exist for an other function")
+                        }
                     } else {
-                        cx.span_err(sp, "this route already exist for an other function")
+                        cx.span_err(sp, "this route is not a valid encoded route")
                     }
                 },
                 _ => cx.span_err(sp, "route attribute can only use literal str")
@@ -235,7 +242,12 @@ fn get_method_attr_value(cx: &mut ExtCtxt,
 
 fn is_method_attribute_valid(attr: &str) -> bool {
     match attr {
-        "GET" | "POST" => true,
+        "GET"
+        | "POST"
+        | "HEAD"
+        | "PUT"
+        | "CONNECT"
+        | "DELETE" => true,
         _ => false
     }
 }
