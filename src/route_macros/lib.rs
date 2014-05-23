@@ -164,8 +164,10 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
                         } else {
                             cx.span_err(sp, "this route already exist for an other function")
                         }
-                    } else {
-                        cx.span_err(sp, "this route is not a valid encoded route")
+                    } else { // FIXME: check routes -> {my_var} + regex + encode
+                        let route_attr = s.get().to_strbuf();
+                        insert_route(cx, item, route_attr);
+                        // cx.span_err(sp, "this route is not a valid encoded route")
                     }
                 },
                 _ => cx.span_err(sp, "route attribute can only use literal str")

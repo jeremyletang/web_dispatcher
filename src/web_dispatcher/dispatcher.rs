@@ -93,10 +93,10 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
                              method: Method)
                              -> Option<Resp<T>> {
         let r_ = split_route(route);
-        match self.routes.find(&(r_, method)) {
-            Some(&f) => Some(f(web_params.clone(), self.producer.get_new())),
-            None     => None
+        for (&(ref r, m), f) in self.routes.iter() {
+            println!("{}", r);
         }
+        None
     }
 }
 

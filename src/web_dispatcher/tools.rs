@@ -66,7 +66,7 @@ pub trait WebParams {
 macro_rules! to_type(
     ($p:expr) => (
         match self.find(&$p.to_strbuf()) {
-            Some(pp) => from_str(pp.to_owned()),
+            Some(pp) => from_str(pp.as_slice()),
             None => None
         }
     )
