@@ -33,7 +33,7 @@ use tools::{RoutesFnType, DummyProducer, Producer};
 
 /// The web dispatcher
 pub struct Dispatcher<T, U = DummyProducer> {
-    routes: HashMap<(Vec<StrBuf>, Method), RoutesFnType<T>>,
+    routes: HashMap<(Vec<String>, Method), RoutesFnType<T>>,
     producer: U
 }
 
@@ -54,7 +54,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
     pub fn run_for_method(&mut self,
                           route: &str,
-                          web_params: HashMap<StrBuf, StrBuf>,
+                          web_params: HashMap<String, String>,
                           method: Method)
                           -> Resp<T> {
         match self.simple_hash_find_route(route, &web_params, method) {
@@ -70,14 +70,14 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
     pub fn run(&mut self,
                route: &str,
-               web_params: HashMap<StrBuf, StrBuf>)
+               web_params: HashMap<String, String>)
                -> Resp<T> {
         self.run_for_method(route, web_params, Get)
     }
 
     fn simple_hash_find_route(&mut self,
                              route: &str,
-                             web_params: &HashMap<StrBuf, StrBuf>,
+                             web_params: &HashMap<String, String>,
                              method: Method)
                              -> Option<Resp<T>> {
         let r_ = split_route(route);
@@ -89,7 +89,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
     fn complex_regex_find_route(&mut self,
                              route: &str,
-                             web_params: &HashMap<StrBuf, StrBuf>,
+                             web_params: &HashMap<String, String>,
                              method: Method)
                              -> Option<Resp<T>> {
         let r_ = split_route(route);
@@ -100,9 +100,9 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
     }
 }
 
-fn split_route(route: &str) -> Vec<StrBuf> {
+fn split_route(route: &str) -> Vec<String> {
     let r_: Vec<&str> = route.split('/').collect();
-    let mut r_: Vec<StrBuf> = r_.iter().map(|r| r.to_strbuf()).collect();
+    let mut r_: Vec<String> = r_.iter().map(|r| r.to_strbuf()).collect();
     if r_.last().is_some() && r_.last().unwrap() == &"".to_strbuf() { r_.pop(); }
     r_
 }

@@ -22,7 +22,7 @@
 
 //! A syntax extension to handle route attributes
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#route_macros:0.0.1"]
+#![crate_id = "github.com/jeremyletang/web_dispatcher#route_macros:0.0.1"]
 #![desc = "route macros for Rust"]
 #![license = "mit"]
 #![crate_type = "rlib"]
@@ -62,9 +62,9 @@ use syntax::ext::base::{ExtCtxt,
                         MacExpr};
 
 // Store routes in a local data (vector of path ident, associated route, method as a string)
-static routes: local_data::Key<Vec<(Vec<Ident>, StrBuf, StrBuf)>> = &local_data::Key;
+static routes: local_data::Key<Vec<(Vec<Ident>, String, String)>> = &local_data::Key;
 
-fn local_data_get_or_init() -> Vec<(Vec<Ident>, StrBuf, StrBuf)> {
+fn local_data_get_or_init() -> Vec<(Vec<Ident>, String, String)> {
     match routes.get() {
         Some(v) =>  v.clone(),
         None => Vec::new()
@@ -181,7 +181,7 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
 // insert the route in the local data
 fn insert_route(cx: &mut ExtCtxt,
                 item: @Item,
-                route_attr: StrBuf) {
+                route_attr: String) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
@@ -189,7 +189,7 @@ fn insert_route(cx: &mut ExtCtxt,
     vec_ident.push(item.ident);
     // insert the route and save
     let mut method = "GET".to_strbuf();
-    let mut v: Vec<(Vec<Ident>, StrBuf, StrBuf)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
+    let mut v: Vec<(Vec<Ident>, String, String)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
         if v_i == &vec_ident {
             method = m.clone();
             false
@@ -200,7 +200,7 @@ fn insert_route(cx: &mut ExtCtxt,
 }
 
 // check if a route is already defined for an other function
-fn route_already_exist(route: &StrBuf) -> bool {
+fn route_already_exist(route: &String) -> bool {
     let v = local_data_get_or_init();
     v.iter().fold(false, |b, &(_, ref s, _)| { b || s == route })
 }
@@ -257,7 +257,7 @@ fn is_method_attribute_valid(attr: &str) -> bool {
 // insert the method in the local data
 fn insert_method(cx: &mut ExtCtxt,
                  item: @Item,
-                 method_attr: StrBuf) {
+                 method_attr: String) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
     let mut vec_ident = cx.mod_path.clone();
@@ -265,7 +265,7 @@ fn insert_method(cx: &mut ExtCtxt,
     vec_ident.push(item.ident);
     // insert the route and save
     let mut route = "".to_strbuf();
-    let mut v: Vec<(Vec<Ident>, StrBuf, StrBuf)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
+    let mut v: Vec<(Vec<Ident>, String, String)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
         if v_i == &vec_ident {
             route = r.clone();
             false

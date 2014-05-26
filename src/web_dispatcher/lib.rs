@@ -22,7 +22,7 @@
 
 //! A web dispatcher library for Rust
 
-#![crate_id = "github.com/JeremyLetang/web_dispatcher#web_dispatcher:0.0.1"]
+#![crate_id = "github.com/jeremyletang/web_dispatcher#web_dispatcher:0.0.1"]
 #![desc = "web dispatcher for Rust"]
 #![license = "mit"]
 #![crate_type = "rlib"]

@@ -35,7 +35,7 @@ use web_dispatcher::tools::WebParams;
 use web_dispatcher::response::{Resp, Filled};
 
 #[route = "/some/route"]
-pub fn default(p: HashMap<StrBuf, StrBuf>, _: ~Any) -> Resp<StrBuf> {
+pub fn default(p: HashMap<String, String>, _: ~Any) -> Resp<String> {
     Filled(format_strbuf!("The name is: {}", p.to_strbuf()))
 }
 
@@ -45,7 +45,7 @@ fn main() {
     params.insert("name".to_strbuf(), "Paul".to_strbuf());
 
     // Create the web_dispatcher and initialize it with routes
-    let mut dispatcher = Dispatcher::<StrBuf>::new(routes!());
+    let mut dispatcher = Dispatcher::<String>::new(routes!());
 
     // Dispatch and store the result
     let return_value = dispatcher.run("/some/route", HashMap::new());
@@ -62,5 +62,5 @@ limits
 For the moment you can use only one prototype for all your programm when you use `libroute_macros`.
 
 The web dispatcher is really naive for the moment, and can only handle routes using this kinds
-of functions: `fn(HashMap<StrBuf, StrBuf>, Box<Amy>) -> Resp<T>`.
+of functions: `fn(HashMap<String, String>, Box<Amy>) -> Resp<T>`.
 

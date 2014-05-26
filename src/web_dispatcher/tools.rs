@@ -37,7 +37,7 @@ use response::Resp;
 /// * `user_params` - a custom user parameter
 ///
 /// * `return` - Resp<T> the custom return value of the function
-pub type RoutesFnType<T> = fn(web_params: HashMap<StrBuf, StrBuf>, user_param: Box<Any>) -> Resp<T>;
+pub type RoutesFnType<T> = fn(web_params: HashMap<String, String>, user_param: Box<Any>) -> Resp<T>;
 
 /// Retrieve a given type from web params easily
 ///
@@ -60,7 +60,7 @@ pub trait WebParams {
     fn to_f32(&self, &str)    -> Option<f32>;
     fn to_f64(&self, &str)    -> Option<f64>;
     fn to_bool(&self, &str)   -> Option<bool>;
-    fn to_string(&self, &str) -> Option<StrBuf>;
+    fn to_string(&self, &str) -> Option<String>;
 }
 
 macro_rules! to_type(
@@ -72,7 +72,7 @@ macro_rules! to_type(
     )
 )
 
-impl WebParams for HashMap<StrBuf, StrBuf> {
+impl WebParams for HashMap<String, String> {
     fn to_int(&self, param_name: &str)    -> Option<int>  { to_type!(param_name) }
     fn to_i8(&self, param_name: &str)     -> Option<i8>   { to_type!(param_name) }
     fn to_i16(&self, param_name: &str)    -> Option<i16>  { to_type!(param_name) }
@@ -86,7 +86,7 @@ impl WebParams for HashMap<StrBuf, StrBuf> {
     fn to_f32(&self, param_name: &str)    -> Option<f32>  { to_type!(param_name) }
     fn to_f64(&self, param_name: &str)    -> Option<f64>  { to_type!(param_name) }
     fn to_bool(&self, param_name: &str)   -> Option<bool> { to_type!(param_name) }
-    fn to_string(&self, param_name: &str) -> Option<StrBuf> { Some(param_name.to_strbuf()) }
+    fn to_string(&self, param_name: &str) -> Option<String> { Some(param_name.to_strbuf()) }
 }
 
 /// The trait which should be implemented by structs who can product the user_params
