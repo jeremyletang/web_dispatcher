@@ -158,14 +158,14 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
                     let validate: Option<url::Path> = from_str(s.get());
                     if validate.is_some() {
                         // check if the route already exist.
-                        let route_attr = s.get().to_strbuf();
+                        let route_attr = s.get().to_string();
                         if !route_already_exist(&route_attr) {
                             insert_route(cx, item, route_attr);
                         } else {
                             cx.span_err(sp, "this route already exist for an other function")
                         }
                     } else { // FIXME: check routes -> {my_var} + regex + encode
-                        let route_attr = s.get().to_strbuf();
+                        let route_attr = s.get().to_string();
                         insert_route(cx, item, route_attr);
                         // cx.span_err(sp, "this route is not a valid encoded route")
                     }
@@ -188,7 +188,7 @@ fn insert_route(cx: &mut ExtCtxt,
     // concatenate the name of the function
     vec_ident.push(item.ident);
     // insert the route and save
-    let mut method = "GET".to_strbuf();
+    let mut method = "GET".to_string();
     let mut v: Vec<(Vec<Ident>, String, String)> = v.move_iter().filter(|&(ref v_i, _, ref m)| {
         if v_i == &vec_ident {
             method = m.clone();
@@ -228,7 +228,7 @@ fn get_method_attr_value(cx: &mut ExtCtxt,
                 LitStr(ref s, _) => {
                     let method_attr = s.get();
                     if is_method_attribute_valid(method_attr) {
-                        insert_method(cx, item, method_attr.to_strbuf());
+                        insert_method(cx, item, method_attr.to_string());
                     } else {
                         cx.span_err(sp, "this method attribut don't exist. Here is a list of \
                             available attribute: [GET, POST]")
@@ -264,7 +264,7 @@ fn insert_method(cx: &mut ExtCtxt,
     // concatenate the name of the function
     vec_ident.push(item.ident);
     // insert the route and save
-    let mut route = "".to_strbuf();
+    let mut route = "".to_string();
     let mut v: Vec<(Vec<Ident>, String, String)> = v.move_iter().filter(|&(ref v_i, ref r, _)| {
         if v_i == &vec_ident {
             route = r.clone();

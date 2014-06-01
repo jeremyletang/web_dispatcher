@@ -62,7 +62,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
             None    => {
                 match self.complex_regex_find_route(route, &web_params, method) {
                     Some(r) => r,
-                    None    => RoutingError(format_strbuf!("route: {}, don't exist", route))
+                    None    => RoutingError(format!("route: {}, don't exist", route))
                 }
             }
         }
@@ -102,8 +102,8 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
 
 fn split_route(route: &str) -> Vec<String> {
     let r_: Vec<&str> = route.split('/').collect();
-    let mut r_: Vec<String> = r_.iter().map(|r| r.to_strbuf()).collect();
-    if r_.last().is_some() && r_.last().unwrap() == &"".to_strbuf() { r_.pop(); }
+    let mut r_: Vec<String> = r_.iter().map(|r| r.to_string()).collect();
+    if r_.last().is_some() && r_.last().unwrap() == &"".to_string() { r_.pop(); }
     r_
 }
 

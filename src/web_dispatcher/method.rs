@@ -25,7 +25,7 @@
 use std::from_str::FromStr;
 
 /// Available methods for web requests
-#[deriving(Clone, Show, Eq, TotalEq, Hash)]
+#[deriving(Clone, Show, Eq, PartialEq, Hash)]
 pub enum Method {
     /// GET method
     Get,
