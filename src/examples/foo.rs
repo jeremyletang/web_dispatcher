@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 use std::any::Any;
-use collections::HashMap;
+use std::collections::HashMap;
 use web_dispatcher::{Resp, Filled};
 
 #[route = "/hello/foo"]
@@ -31,7 +31,7 @@ pub fn hello_route3(_: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
 
 pub mod bar {
     use std::any::Any;
-    use collections::HashMap;
+    use std::collections::HashMap;
     use web_dispatcher::{Resp, Filled};
 
     #[route = "/hello/foo/bar"]

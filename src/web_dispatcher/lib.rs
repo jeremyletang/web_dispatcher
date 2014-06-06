@@ -32,7 +32,6 @@
 #![feature(macro_rules)]
 #![feature(default_type_params)]
 
-extern crate collections;
 extern crate regex;
 extern crate regex_macros;
 

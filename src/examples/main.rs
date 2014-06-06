@@ -22,13 +22,12 @@
 
 #![feature(phase)]
 
-extern crate collections;
 extern crate web_dispatcher;
 #[phase(syntax, link)]
 extern crate route_macros;
 
 use std::any::Any;
-use collections::HashMap;
+use std::collections::HashMap;
 
 use web_dispatcher::{Dispatcher, WebParams, Resp, Filled};
 

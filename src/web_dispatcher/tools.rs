@@ -24,7 +24,7 @@
 
 use std::any::Any;
 
-use collections::HashMap;
+use std::collections::HashMap;
 use response::Resp;
 
 /// Function signature for a route

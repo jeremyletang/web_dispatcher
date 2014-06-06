@@ -25,7 +25,7 @@
 #![allow(visible_private_types)]
 
 use std::default::Default;
-use collections::HashMap;
+use std::collections::HashMap;
 
 use method::{Method, Get};
 use response::{Resp, RoutingError};
