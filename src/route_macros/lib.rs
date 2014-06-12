@@ -29,7 +29,7 @@
 #![crate_type = "dylib"]
 #![experimental]
 #![allow(missing_doc, unused_variable)]
-#![feature(macro_registrar, managed_boxes, quote)]
+#![feature(plugin_registrar, managed_boxes, quote)]
 
 extern crate syntax;
 extern crate url;
@@ -72,7 +72,7 @@ fn local_data_get_or_init() -> Vec<(Vec<Ident>, String, String)> {
 }
 
 #[doc(hidden)]
-#[macro_registrar]
+#[plugin_registrar]
 pub fn registrar(register: |Name, SyntaxExtension|) {
     register(token::intern("route"), ItemModifier(expand_route));
     register(token::intern("method"), ItemModifier(expand_method));

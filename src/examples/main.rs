@@ -23,7 +23,7 @@
 #![feature(phase)]
 
 extern crate web_dispatcher;
-#[phase(syntax, link)]
+#[phase(plugin, link)]
 extern crate route_macros;
 
 use std::any::Any;
