@@ -24,7 +24,7 @@ Here is a simple example of what am i doing:
 
 extern crate collections;
 extern crate web_dispatcher;
-#[phase(syntax, link)]
+#[phase(plugin, link)]
 extern crate route_macros;
 
 use std::any::Any;

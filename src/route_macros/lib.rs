@@ -32,10 +32,13 @@
 #![feature(plugin_registrar, managed_boxes, quote)]
 
 extern crate syntax;
+extern crate rustc;
 extern crate url;
 
 use std::local_data;
 use std::gc::{GC, Gc};
+
+use rustc::plugin::registry::Registry;
 
 use syntax::ast;
 use syntax::ast::Path;
@@ -47,7 +50,6 @@ use syntax::owned_slice::OwnedSlice;
 use syntax::ast::{Ident,
                   TokenTree,
                   Expr,
-                  Name,
                   ExprVec,
                   MetaItem,
                   MetaNameValue,
@@ -56,9 +58,6 @@ use syntax::ast::{Ident,
                   ItemFn};
 use syntax::ext::base::{ExtCtxt,
                         MacResult,
-                        SyntaxExtension,
-                        BasicMacroExpander,
-                        NormalTT,
                         ItemModifier,
                         MacExpr};
 
@@ -74,15 +73,10 @@ fn local_data_get_or_init() -> Vec<(Vec<Ident>, String, String)> {
 
 #[doc(hidden)]
 #[plugin_registrar]
-pub fn registrar(register: |Name, SyntaxExtension|) {
-    register(token::intern("route"), ItemModifier(expand_route));
-    register(token::intern("method"), ItemModifier(expand_method));
-    register(token::intern("routes"),
-             NormalTT(box BasicMacroExpander {
-                expander: expand_get_routes,
-                span: None,
-             },
-             None));
+pub fn plugin_registrar(reg: &mut Registry) {
+    reg.register_syntax_extension(token::intern("route"), ItemModifier(expand_route));
+    reg.register_syntax_extension(token::intern("method"), ItemModifier(expand_method));
+    reg.register_macro("routes", expand_get_routes);
 }
 
 fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResult> {
@@ -94,7 +88,8 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResu
         quote_expr!(&*cx, ($p, $s_, $m_))
     }).collect();
     let v = create_slice_expr(v, sp);
-    MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
+    // MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
+    MacExpr::new(quote_expr!(cx, $v.to_owned()))
 }
 
 // create the path expression
@@ -160,7 +155,6 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
                     if validate.is_some() {
                         // check if the route already exist.
                         let route_attr = s.get().to_string();
-                        println!("{}", route_attr);
                         if !route_already_exist(&route_attr) {
                             insert_route(cx, item, route_attr);
                         } else {

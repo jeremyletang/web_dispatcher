@@ -33,8 +33,8 @@ use web_dispatcher::{Dispatcher, WebParams, Resp, Filled};
 
 mod foo;
 
-#[method = "POST"]
-#[route = "/hello/main/POST"]
+// #[method = "POST"]
+#[route = "/hello/main"]
 pub fn hello_route(_: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
     Filled("hello from root mod !".to_string())
 }
