@@ -35,6 +35,7 @@ extern crate syntax;
 extern crate url;
 
 use std::local_data;
+use std::gc::{GC, Gc};
 
 use syntax::ast;
 use syntax::ast::Path;
@@ -97,7 +98,7 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResu
 }
 
 // create the path expression
-fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> @Expr {
+fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> Gc<Expr> {
     // create the list of path segment from the idents
     let segs = vec_ident.iter().fold(Vec::new(), |mut v, &i| {
         v.push(PathSegment {
@@ -113,7 +114,7 @@ fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> @Expr {
         global: false,
         segments: segs,
     };
-    @Expr {
+    box(GC) Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprPath(func_path),
         span: sp
@@ -121,8 +122,8 @@ fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> @Expr {
 }
 
 // create a slice from the vector of (path / routes / method)
-fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
-    @Expr {
+fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
+    box(GC) Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprVec(vec),
         span: sp
@@ -131,9 +132,9 @@ fn create_slice_expr(vec: Vec<@Expr>, sp: Span) -> @Expr {
 
 fn expand_route(cx: &mut ExtCtxt,
                 sp: Span,
-                meta_item: @MetaItem,
-                item: @Item)
-                -> @Item {
+                meta_item: Gc<MetaItem>,
+                item: Gc<Item>)
+                -> Gc<Item> {
     match item.node {
         ItemFn(_, _, _, _, _) => {
             get_route_attr_value(cx, sp, meta_item, item);
@@ -148,8 +149,8 @@ fn expand_route(cx: &mut ExtCtxt,
 
 fn get_route_attr_value(cx: &mut ExtCtxt,
                         sp: Span,
-                        meta_item: @MetaItem,
-                        item: @Item) {
+                        meta_item: Gc<MetaItem>,
+                        item: Gc<Item>) {
     match meta_item.node {
         MetaNameValue(_, ref l) => {
             match l.node {
@@ -159,6 +160,7 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
                     if validate.is_some() {
                         // check if the route already exist.
                         let route_attr = s.get().to_string();
+                        println!("{}", route_attr);
                         if !route_already_exist(&route_attr) {
                             insert_route(cx, item, route_attr);
                         } else {
@@ -180,7 +182,7 @@ fn get_route_attr_value(cx: &mut ExtCtxt,
 
 // insert the route in the local data
 fn insert_route(cx: &mut ExtCtxt,
-                item: @Item,
+                item: Gc<Item>,
                 route_attr: String) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
@@ -205,7 +207,7 @@ fn route_already_exist(route: &String) -> bool {
     v.iter().fold(false, |b, &(_, ref s, _)| { b || s == route })
 }
 
-fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) -> @Item {
+fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: Gc<MetaItem>, item: Gc<Item>) -> Gc<Item> {
     match item.node {
         ItemFn(_, _, _, _, _) => {
             get_method_attr_value(cx, sp, meta_item, item);
@@ -220,8 +222,8 @@ fn expand_method(cx: &mut ExtCtxt, sp: Span, meta_item: @MetaItem, item: @Item) 
 
 fn get_method_attr_value(cx: &mut ExtCtxt,
                          sp: Span,
-                         meta_item: @MetaItem,
-                         item: @Item) {
+                         meta_item: Gc<MetaItem>,
+                         item: Gc<Item>) {
     match meta_item.node {
         MetaNameValue(_, ref l) => {
             match l.node {
@@ -256,7 +258,7 @@ fn is_method_attribute_valid(attr: &str) -> bool {
 
 // insert the method in the local data
 fn insert_method(cx: &mut ExtCtxt,
-                 item: @Item,
+                 item: Gc<Item>,
                  method_attr: String) {
     let v = local_data_get_or_init();
     // retrieve the complete path of the function
