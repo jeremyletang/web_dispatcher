@@ -60,7 +60,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, 
         match self.find_simple_hash_route(route, &web_params, method) {
             Some(r) => r,
             None    => {
-                match self.find_complex_regex_route(route, &web_params, method) {
+                match self.find_complex_route(route, &web_params, method) {
                     Some(r) => r,
                     None    => RoutingError(format!("route: {}, don't exist", route))
                 }
