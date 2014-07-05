@@ -23,6 +23,7 @@
 use std::default::Default;
 
 /// Responses returned by the web dispatcher
+#[deriving(Show, PartialEq, PartialOrd)]
 pub enum Resp<T> {
     /// The route is valid and the functon has filled the response with data
     Filled(T),

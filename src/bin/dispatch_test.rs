@@ -71,7 +71,7 @@ fn main() {
     let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
     dispatcher.run("/hello/blah/main/", params.clone());
     dispatcher.run("/add/route", params.clone());
-    dispatcher.run("/hello/*/bar/", params.clone());
+    dispatcher.run("/hello/foo/bar/", params.clone());
     println!("{}", return_value.unwrap());
     println!("{}", dispatcher);
 }

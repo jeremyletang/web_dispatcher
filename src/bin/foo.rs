@@ -32,7 +32,7 @@ pub mod bar {
     use std::collections::HashMap;
     use web_dispatcher::{Resp, Filled};
 
-    #[route = "/hello/foo/bar"]
+    #[route = "/hello/*/bar"]
     pub fn hello_route4(_: HashMap<String, String>, _: String) -> Resp<String> {
         println!("hey * matching work !")
         Filled("hello from foo::bar mod !".to_string())

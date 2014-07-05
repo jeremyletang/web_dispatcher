@@ -145,7 +145,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                                 var.shift_char();
                                 new_params.insert(var, b.clone());
                                 true
-                            } else if b.as_slice() == "*" { // glob matching
+                            } else if a.as_slice() == "*" { // glob matching
                                 true
                             } else { // route don't exist
                                 false

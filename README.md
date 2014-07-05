@@ -22,34 +22,32 @@ Here is a simple example of what am i doing:
 //! simple routes example
 #![feature(phase)]
 
-extern crate collections;
-extern crate web_dispatcher;
 #[phase(plugin, link)]
 extern crate route_macros;
+extern crate web_dispatcher;
 
-use std::any::Any;
-use collections::HashMap;
+use std::collections::HashMap;
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled} ;
 
-use web_dispatcher::Dispatcher;
-use web_dispatcher::tools::WebParams;
-use web_dispatcher::response::{Resp, Filled};
-
-#[route = "/some/route"]
-pub fn default(p: HashMap<String, String>, _: ~Any) -> Resp<String> {
-    Filled(format_strbuf!("The name is: {}", p.to_strbuf()))
+#[route = "/some/*/strange/:age/route"]
+pub fn default(p: HashMap<String, String>, _: ()) -> Resp<String> {
+    Filled(format!("The name is: {} and the age is {}",
+                   p.to_string("name"),
+                   p.to_int("age")))
 }
 
 fn main() {
     // Create and fill the webparams
     let mut params = HashMap::new();
-    params.insert("name".to_strbuf(), "Paul".to_strbuf());
+    params.insert("name".to_string(), "Paul".to_string());
 
     // Create the web_dispatcher and initialize it with routes
     let mut dispatcher = Dispatcher::<String>::new(routes!());
 
     // Dispatch and store the result
-    let return_value = dispatcher.run("/some/route", HashMap::new());
+    let return_value = dispatcher.run("/some/really/strange/42/route", params);
 
+    // print the response
     println!("{}", return_value.unwrap())
 }
 

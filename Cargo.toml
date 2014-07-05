@@ -8,6 +8,8 @@ build = "make route_macros"
 name = "web_dispatcher"
 crate-type = ["rlib", "dylib"]
 
-
 [[bin]]
 name = "dispatch_test"
+
+[[bin]]
+name = "readme_ex"
