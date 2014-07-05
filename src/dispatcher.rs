@@ -73,6 +73,13 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
         self.producer = param_producer
     }
 
+    pub fn add_route(&mut self,
+                     func: RoutesFnType<T, U>,
+                     route_name: &str,
+                     method: Method) {
+        self.routes.insert((split_route(route_name), method), func);
+    }
+
     pub fn run_with_method(&mut self,
                            route: &str,
                            web_params: HashMap<String, String>,
@@ -103,7 +110,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                              -> Option<Resp<T>> {
         let r_ = split_route(route);
         match self.routes.find(&(r_, method)) {
-            Some(&f) => Some(f(web_params.clone(), self.producer.get_new())),
+            Some(f) => Some((*f)(web_params.clone(), self.producer.get_new())),
             None     => None
         }
     }

@@ -28,7 +28,7 @@ extern crate web_dispatcher;
 
 use std::collections::HashMap;
 
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer};
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer, Get};
 
 mod foo;
 
@@ -57,13 +57,20 @@ pub fn hello_route2(p: HashMap<String, String>, _: String) -> Resp<String> {
            p.to_int("age").unwrap()))
 }
 
+pub fn add_route(_: HashMap<String, String>, _: String) -> Resp<String> {
+    println!("Hand added route !");
+    Filled("Hand added route!".to_string())
+}
+
 fn main() {
     let mut params = HashMap::new();
     params.insert("name".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
     let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
+    dispatcher.add_route(add_route, "/add/route", Get);
     let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
     dispatcher.run("/hello/blah/main/", params.clone());
+    dispatcher.run("/add/route", params.clone());
     dispatcher.run("/hello/*/bar/", params.clone());
     println!("{}", return_value.unwrap());
 }
