@@ -22,7 +22,7 @@
 
 //! A syntax extension to handle route attributes
 
-#![crate_id = "github.com/jeremyletang/web_dispatcher#route_macros:0.0.1"]
+#![crate_id = "route_macros"]
 #![desc = "route macros for Rust"]
 #![license = "mit"]
 #![crate_type = "rlib"]

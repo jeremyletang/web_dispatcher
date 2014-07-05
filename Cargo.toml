@@ -1,0 +1,13 @@
+[package]
+name = "web_dispatcher"
+version = "0.0.1"
+authors = ["letang.jeremy@gmail.com"]
+build = "make route_macros"
+
+[[lib]]
+name = "web_dispatcher"
+crate-type = ["rlib", "dylib"]
+
+
+[[bin]]
+name = "dispatch_test"

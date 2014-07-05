@@ -20,29 +20,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-LIB_ROUTE_MACRO_PATH = src/route_macros/lib.rs
-LIB_WEB_DISPATCHER_PATH = src/web_dispatcher/lib.rs
-EXAMPLE_PATH = src/examples/main.rs
+LIB_ROUTE_MACRO_PATH = src/route_macros.rs
+LIB_WEB_DISPATCHER_PATH = src/web_dispatcher.rs
+EXAMPLE_PATH = src/bin/dispatch_test.rs
 
 all: route_macros web_dispatcher tests
 
 route_macros:
-	mkdir -p lib
-	rustc --out-dir=lib $(LIB_ROUTE_MACRO_PATH)
+	mkdir -p target
+	rustc --out-dir=target $(LIB_ROUTE_MACRO_PATH)
 
 web_dispatcher:
-	mkdir -p lib
-	rustc -L ./lib --out-dir=lib $(LIB_WEB_DISPATCHER_PATH)
+	mkdir -p target
+	rustc -L target --out-dir=target $(LIB_WEB_DISPATCHER_PATH)
 
 docs:
 	mkdir -p doc
 	rustdoc -o doc $(LIB_WEB_DISPATCHER_PATH)
 
 tests:
-	mkdir -p bin
-	rustc -o bin/test -L ./lib $(EXAMPLE_PATH)
+	mkdir -p target
+	rustc --out-dir=target -L ./target $(EXAMPLE_PATH)
 
 clean:
-	rm -rf lib
+	rm -rf target
 	rm -rf doc
-	rm -rf bin

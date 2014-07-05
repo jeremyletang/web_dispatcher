@@ -22,9 +22,9 @@
 
 #![feature(phase)]
 
-extern crate web_dispatcher;
 #[phase(plugin, link)]
 extern crate route_macros;
+extern crate web_dispatcher;
 
 use std::any::Any;
 use std::collections::HashMap;
