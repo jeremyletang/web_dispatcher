@@ -34,6 +34,7 @@ pub mod bar {
 
     #[route = "/hello/foo/bar"]
     pub fn hello_route4(_: HashMap<String, String>, _: String) -> Resp<String> {
+        println!("hey * matching work !")
         Filled("hello from foo::bar mod !".to_string())
     }
 }

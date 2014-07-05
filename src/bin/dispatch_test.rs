@@ -51,6 +51,7 @@ pub fn hello_route(_: HashMap<String, String>, u: String) -> Resp<String> {
 
 #[route = "/hello/:my_var/main/"]
 pub fn hello_route2(p: HashMap<String, String>, _: String) -> Resp<String> {
+    println!(":my_var is {}", p.to_string("my_var"));
     Filled(format!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),
            p.to_int("age").unwrap()))
@@ -58,9 +59,11 @@ pub fn hello_route2(p: HashMap<String, String>, _: String) -> Resp<String> {
 
 fn main() {
     let mut params = HashMap::new();
-    params.insert("Paul".to_string(), "Paul".to_string());
+    params.insert("name".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
     let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
-    let return_value = dispatcher.run_with_method("/hello/main", params, web_dispatcher::Post);
+    let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
+    dispatcher.run("/hello/blah/main/", params.clone());
+    dispatcher.run("/hello/*/bar/", params.clone());
     println!("{}", return_value.unwrap());
 }

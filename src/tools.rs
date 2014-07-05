@@ -84,7 +84,7 @@ impl WebParams for HashMap<String, String> {
     fn to_f32(&self, param_name: &str)    -> Option<f32>  { to_type!(param_name) }
     fn to_f64(&self, param_name: &str)    -> Option<f64>  { to_type!(param_name) }
     fn to_bool(&self, param_name: &str)   -> Option<bool> { to_type!(param_name) }
-    fn to_string(&self, param_name: &str) -> Option<String> { Some(param_name.to_string()) }
+    fn to_string(&self, param_name: &str) -> Option<String> { to_type!(param_name) }
 }
 
 /// The trait which should be implemented by structs who can product the user_params

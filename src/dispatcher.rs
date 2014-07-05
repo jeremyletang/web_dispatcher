@@ -37,6 +37,27 @@ pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
     producer: P
 }
 
+pub struct ZipWhile<I, J> {
+    i: I,
+    j: J
+}
+
+impl<A, B, I: Iterator<A>, J: Iterator<B>> Iterator<(Option<A>, Option<B>)> for ZipWhile<I, J> {
+    fn next(&mut self) -> Option<(Option<A>, Option<B>)> {
+        let i_next = self.i.next();
+        let j_next = self.j.next();
+        if i_next.is_none() && j_next.is_none() {
+            None
+        } else {
+            Some((i_next, j_next))
+        }
+    }
+}
+
+pub fn zip_while<A, B, I: Iterator<A>, J: Iterator<B>>(i: I, j: J) -> ZipWhile<I, J> {
+    ZipWhile { i: i, j: j }
+}
+
 impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
     pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
@@ -93,10 +114,49 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                           method: Method)
                           -> Option<Resp<T>> {
         let r_ = split_route(route);
+        let mut new_params = HashMap::new();
+        let mut result = None;
+
+        // for all stored routes
         for (&(ref r, m), f) in self.routes.iter() {
-            println!("{}", r);
+            if m == method { // if method match
+                // check a stored route with the current route
+                let res = zip_while(r.iter(), r_.iter()).advance(|(a, b)| {
+                    if a.is_none() && b.is_none() { // both are None -> route match
+                        true
+                    } else if a.is_none() || b.is_none() { // one of two is None -> route don't match
+                        false
+                    } else {
+                        let a = a.unwrap();
+                        let b = b.unwrap();
+                        if a == b { // if the route fragments match
+                            true
+                        } else {
+                            if a.len() > 0 && a.as_bytes()[0] == ':' as u8 { // this is a custom var
+                                let mut var = String::from_str(a.as_slice());
+                                var.shift_char();
+                                new_params.insert(var, b.clone());
+                                true
+                            } else if b.as_slice() == "*" { // glob matching
+                                true
+                            } else { // route don't exist
+                                false
+                            }
+                        }
+                    }
+                });
+                match res {
+                    true => {
+                        new_params.extend(web_params.clone().move_iter());
+                        let f_result: Resp<T> = (*f)(new_params, self.producer.get_new());
+                        result = Some(f_result);
+                        break
+                    },
+                    false => new_params.clear()
+                }
+            }
         }
-        None
+        result
     }
 }
 
