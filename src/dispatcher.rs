@@ -29,16 +29,16 @@ use std::collections::HashMap;
 
 use method::{Method, Get};
 use response::{Resp, RoutingError};
-use tools::{RoutesFnType, DummyProducer, Producer};
+use tools::{RoutesFnType, UnusedProducer, Unused, Producer};
 
 /// The web dispatcher
-pub struct Dispatcher<T, U = DummyProducer> {
-    routes: HashMap<(Vec<String>, Method), RoutesFnType<T>>,
-    producer: U
+pub struct Dispatcher<T, P = UnusedProducer, U = Unused> {
+    routes: HashMap<(Vec<String>, Method), RoutesFnType<T, U>>,
+    producer: P
 }
 
-impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
-    pub fn new(routes: Vec<(RoutesFnType<T>, &str, &str)>) -> Dispatcher<T, U> {
+impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, U> {
+    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
             routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m)| {
                 let r_ = split_route(r);
@@ -48,7 +48,7 @@ impl<T, U: Producer + Default = DummyProducer> Dispatcher<T, U> {
         }
     }
 
-    pub fn set_producer(&mut self, param_producer: U) {
+    pub fn set_producer(&mut self, param_producer: P) {
         self.producer = param_producer
     }
 

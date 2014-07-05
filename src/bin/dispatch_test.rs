@@ -26,21 +26,31 @@
 extern crate route_macros;
 extern crate web_dispatcher;
 
-use std::any::Any;
 use std::collections::HashMap;
 
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled};
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Unused, Producer};
 
 mod foo;
 
+#[deriving(Default)]
+pub struct StringProducer;
+
+impl Producer<String> for StringProducer {
+    fn get_new(&self) -> Box<String> {
+        box String::from_str("This is a string from the custom producer")
+    }
+}
+
+
 // #[method = "POST"]
 #[route = "/hello/main"]
-pub fn hello_route(_: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
+pub fn hello_route(_: HashMap<String, String>, u: Box<String>) -> Resp<String> {
+    println!("param u contains: {}", u);
     Filled("hello from root mod !".to_string())
 }
 
-#[route = "/hello/{my_var}/main/"]
-pub fn hello_route2(p: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
+#[route = "/hello/:my_var/main/"]
+pub fn hello_route2(p: HashMap<String, String>, _: Box<String>) -> Resp<String> {
     Filled(format!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),
            p.to_int("age").unwrap()))
@@ -50,7 +60,7 @@ fn main() {
     let mut params = HashMap::new();
     params.insert("Paul".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
-    let mut dispatcher = Dispatcher::<String>::new(routes!());
+    let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
     let return_value = dispatcher.run("/hello/main", params);
-    println!("{}", return_value.unwrap())
+    println!("{}", return_value.unwrap());
 }

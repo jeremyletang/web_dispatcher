@@ -20,22 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use std::any::Any;
 use std::collections::HashMap;
-use web_dispatcher::{Resp, Filled};
+use web_dispatcher::{Resp, Filled, Unused};
 
 #[route = "/hello/foo"]
-pub fn hello_route3(_: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
+pub fn hello_route3(_: HashMap<String, String>, _: Box<String>) -> Resp<String> {
     Filled("Hello from foo mod !".to_string())
 }
 
 pub mod bar {
-    use std::any::Any;
     use std::collections::HashMap;
-    use web_dispatcher::{Resp, Filled};
+    use web_dispatcher::{Resp, Filled, Unused};
 
     #[route = "/hello/foo/bar"]
-    pub fn hello_route4(_: HashMap<String, String>, _: Box<Any>) -> Resp<String> {
+    pub fn hello_route4(_: HashMap<String, String>, _: Box<String>) -> Resp<String> {
         Filled("hello from foo::bar mod !".to_string())
     }
 }

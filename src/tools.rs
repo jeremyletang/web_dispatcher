@@ -37,7 +37,7 @@ use response::Resp;
 /// * `user_params` - a custom user parameter
 ///
 /// * `return` - Resp<T> the custom return value of the function
-pub type RoutesFnType<T> = fn(web_params: HashMap<String, String>, user_param: Box<Any>) -> Resp<T>;
+pub type RoutesFnType<T, U> = fn(web_params: HashMap<String, String>, user_param: Box<U>) -> Resp<T>;
 
 /// Retrieve a given type from web params easily
 ///
@@ -90,20 +90,20 @@ impl WebParams for HashMap<String, String> {
 }
 
 /// The trait which should be implemented by structs who can product the user_params
-pub trait Producer {
+pub trait Producer<U> {
     /// Return a new instance of the user_params
-    fn get_new(&self) -> Box<Any>;
+    fn get_new(&self) -> Box<U>;
 }
 
 #[doc(hidden)]
-pub struct Dummy;
+pub struct Unused;
 
 #[doc(hidden)]
 #[deriving(Default)]
-pub struct DummyProducer;
+pub struct UnusedProducer;
 
-impl Producer for DummyProducer {
-    fn get_new(&self) -> Box<Any> {
-        box Dummy as Box<Any>
+impl Producer<Unused> for UnusedProducer {
+    fn get_new(&self) -> Box<Unused> {
+        box Unused
     }
 }
