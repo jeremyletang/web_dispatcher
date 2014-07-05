@@ -29,14 +29,18 @@
 #![crate_type = "dylib"]
 #![experimental]
 #![allow(missing_doc, unused_variable)]
-#![feature(plugin_registrar, managed_boxes, quote)]
+#![feature(plugin_registrar, managed_boxes, quote, phase)]
 
+#[phase(plugin, link)]
+extern crate regex_macros;
 extern crate syntax;
 extern crate rustc;
 extern crate url;
+extern crate regex;
 
 use std::local_data;
 use std::gc::{GC, Gc};
+use std::ascii::OwnedStrAsciiExt;
 
 use rustc::plugin::registry::Registry;
 
@@ -60,6 +64,13 @@ use syntax::ext::base::{ExtCtxt,
                         MacResult,
                         ItemModifier,
                         MacExpr};
+
+use regex::Regex;
+
+static WILDCARD: &'static str = "[0-9:alpha:_]*";
+static VAR: &'static str = ":[0-9a-zA-Z-_]+";
+static RE_VAR: Regex = regex!(":[0-9a-zA-Z-_]+");
+
 
 // Store routes in a local data (vector of path ident, associated route, method as a string)
 static routes: local_data::Key<Vec<(Vec<Ident>, String, String)>> = &local_data::Key;
@@ -85,11 +96,32 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResu
         let p = create_func_path_expr(f, sp);
         let s_ = s.as_slice();
         let m_ = m.as_slice();
-        quote_expr!(&*cx, ($p, $s_, $m_))
+        let vars_reg = create_vars_regex(s_);
+        let v_r = vars_reg.as_slice();
+        let match_reg = create_match_regex(s_);
+        let m_r = match_reg.as_slice();
+        // println!("route: {}, var_reg: {}, match_reg: {}", s_, v_r, m_r);
+        quote_expr!(&*cx, ($p, $s_, $m_, $v_r, $m_r))
     }).collect();
     let v = create_slice_expr(v, sp);
     // MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
     MacExpr::new(quote_expr!(cx, $v.to_owned()))
+}
+
+fn create_vars_regex(r: &str) -> String {
+    let mut var_reg: String = String::from_char(1, '^');
+    var_reg = var_reg.append(RE_VAR.replace_all(r, ":([0-9a-zA-Z-_]+)").as_slice());
+    var_reg = var_reg.replace("*", "\\*");
+    var_reg.push_str("?/$");
+    var_reg
+}
+
+fn create_match_regex(r: &str) -> String {
+    let mut match_reg: String = String::from_char(1, '^');
+    match_reg = match_reg.append(RE_VAR.replace_all(r, "([0-9a-zA-Z-_]+)").as_slice());
+    match_reg = match_reg.replace("*", "[0-9a-zA-Z-_]*");
+    match_reg.push_str("?/$");
+    match_reg
 }
 
 // create the path expression
@@ -239,7 +271,7 @@ fn get_method_attr_value(cx: &mut ExtCtxt,
 }
 
 fn is_method_attribute_valid(attr: &str) -> bool {
-    match attr {
+    match attr.to_string().into_ascii_upper().as_slice() {
         "GET"
         | "POST"
         | "HEAD"

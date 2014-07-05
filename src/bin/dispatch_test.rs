@@ -28,7 +28,7 @@ extern crate web_dispatcher;
 
 use std::collections::HashMap;
 
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer, Get};
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer};
 
 mod foo;
 
@@ -42,16 +42,16 @@ impl Producer<String> for StringProducer {
 }
 
 
-#[method = "POST"]
+#[method = "post"]
 #[route = "/hello/main"]
 pub fn hello_route(_: HashMap<String, String>, u: String) -> Resp<String> {
     println!("param u contains: {}", u);
     Filled("hello from root mod !".to_string())
 }
 
-#[route = "/hello/:my_var/main/"]
+#[route = "/hello/:my_var/world/*/main/"]
 pub fn hello_route2(p: HashMap<String, String>, _: String) -> Resp<String> {
-    println!(":my_var is {}", p.to_string("my_var"));
+    println!("From wildcar + var: :my_var is {}", p.to_string("my_var"));
     Filled(format!("Your name is: {}, and your age is: {} !",
            p.to_string("name").unwrap(),
            p.to_int("age").unwrap()))
@@ -67,11 +67,11 @@ fn main() {
     params.insert("name".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
     let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
-    dispatcher.add_route(add_route, "/add/route", Get);
+    // dispatcher.add_route(add_route, "/add/route", Get);
     let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
-    dispatcher.run("/hello/blah/main/", params.clone());
-    dispatcher.run("/add/route", params.clone());
+    dispatcher.run("/hello/blah/world/blahahahahaha/main/", params.clone());
+    // dispatcher.run("/add/route", params.clone());
     dispatcher.run("/hello/foo/bar/", params.clone());
     println!("{}", return_value.unwrap());
-    println!("{}", dispatcher);
+    // println!("{}", dispatcher);
 }

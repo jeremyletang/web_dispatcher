@@ -23,6 +23,7 @@
 //! Available methods for web requests
 
 use std::from_str::FromStr;
+use std::ascii::OwnedStrAsciiExt;
 
 /// Available methods for web requests
 #[deriving(Clone, Show, Eq, PartialEq, Hash)]
@@ -43,8 +44,8 @@ pub enum Method {
 
 impl FromStr for Method {
     fn from_str(s: &str) -> Option<Method> {
-        match s {
-            "GET"  => Some(Get),
+        match s.to_string().into_ascii_upper().as_slice() {
+            "GET" => Some(Get),
             "POST" => Some(Post),
             "HEAD" => Some(Head),
             "DELETE" => Some(Delete),

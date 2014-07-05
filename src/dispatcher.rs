@@ -28,43 +28,43 @@ use std::default::Default;
 use std::collections::HashMap;
 use std::fmt::{Show, Formatter, FormatError};
 
+use regex::Regex;
+
 use method::{Method, Get};
 use response::{Resp, RoutingError};
 use tools::{RoutesFnType, UnusedProducer, Producer};
 
+pub struct RouteDatas<T, U> {
+    var_names: Vec<String>,
+    regex: Regex,
+    f: RoutesFnType<T, U>
+}
+
 /// The web dispatcher
 pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
-    routes: HashMap<(Vec<String>, Method), RoutesFnType<T, U>>,
+    routes: HashMap<(String, Method), RouteDatas<T, U>>,
     producer: P
 }
 
-pub struct ZipWhile<I, J> {
-    i: I,
-    j: J
-}
-
-impl<A, B, I: Iterator<A>, J: Iterator<B>> Iterator<(Option<A>, Option<B>)> for ZipWhile<I, J> {
-    fn next(&mut self) -> Option<(Option<A>, Option<B>)> {
-        let i_next = self.i.next();
-        let j_next = self.j.next();
-        if i_next.is_none() && j_next.is_none() {
-            None
-        } else {
-            Some((i_next, j_next))
-        }
-    }
-}
-
-pub fn zip_while<A, B, I: Iterator<A>, J: Iterator<B>>(i: I, j: J) -> ZipWhile<I, J> {
-    ZipWhile { i: i, j: j }
-}
-
 impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
-    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str)>) -> Dispatcher<T, P, U> {
+    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, &str, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
-            routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m)| {
-                let r_ = split_route(r);
-                h.insert((r_, from_str(m).unwrap()), f); h
+            routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m, vars, matcher)| {
+                let re = Regex::new(vars).unwrap();
+                let vars: Vec<String> = match re.captures(r) {
+                    Some(c) => {
+                        let mut cap_i = c.iter();
+                        cap_i.next();
+                        cap_i.map(|x| String::from_str(x)).collect()
+                    },
+                    None => Vec::new()
+                };
+                let d = RouteDatas {
+                    var_names: vars,
+                    regex: Regex::new(matcher).unwrap(),
+                    f: f
+                };
+                h.insert((r.to_string(), from_str(m).unwrap()), d); h
             }),
             producer: Default::default()
         }
@@ -74,12 +74,12 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
         self.producer = param_producer
     }
 
-    pub fn add_route(&mut self,
-                     func: RoutesFnType<T, U>,
-                     route_name: &str,
-                     method: Method) {
-        self.routes.insert((split_route(route_name), method), func);
-    }
+    // pub fn add_route(&mut self,
+    //                  func: RoutesFnType<T, U>,
+    //                  route_name: &str,
+    //                  method: Method) {
+    //     self.routes.insert((split_route(route_name), method), func);
+    // }
 
     pub fn run_with_method(&mut self,
                            route: &str,
@@ -109,9 +109,9 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                              web_params: &HashMap<String, String>,
                              method: Method)
                              -> Option<Resp<T>> {
-        let r_ = split_route(route);
-        match self.routes.find(&(r_, method)) {
-            Some(f) => Some((*f)(web_params.clone(), self.producer.get_new())),
+        // let r_ = split_route(route);
+        match self.routes.find(&(route.to_string(), method)) {
+            Some(f) => Some((f.f)(web_params.clone(), self.producer.get_new())),
             None     => None
         }
     }
@@ -121,58 +121,29 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                           web_params: &HashMap<String, String>,
                           method: Method)
                           -> Option<Resp<T>> {
-        let r_ = split_route(route);
-        let mut new_params = HashMap::new();
         let mut result = None;
-
-        // for all stored routes
-        for (&(ref r, m), f) in self.routes.iter() {
-            if m == method { // if method match
-                // check a stored route with the current route
-                let res = zip_while(r.iter(), r_.iter()).advance(|(a, b)| {
-                    if a.is_none() && b.is_none() { // both are None -> route match
-                        true
-                    } else if a.is_none() || b.is_none() { // one of two is None -> route don't match
-                        false
-                    } else {
-                        let a = a.unwrap();
-                        let b = b.unwrap();
-                        if a == b { // if the route fragments match
+        for (&(_, m), d) in self.routes.iter() {
+            if m == method {
+                if d.regex.is_match(route) {
+                    let mut new_params: HashMap<String, String> = HashMap::new();
+                    if d.var_names.len() > 0 {
+                        let c = d.regex.captures(route).unwrap();
+                        let mut i = c.iter();
+                        i.next();
+                        d.var_names.iter().zip(i).advance(|(a, b)| {
+                            new_params.insert(a.clone(), b.to_string());
                             true
-                        } else {
-                            if a.len() > 0 && a.as_bytes()[0] == ':' as u8 { // this is a custom var
-                                let mut var = String::from_str(a.as_slice());
-                                var.shift_char();
-                                new_params.insert(var, b.clone());
-                                true
-                            } else if a.as_slice() == "*" { // glob matching
-                                true
-                            } else { // route don't exist
-                                false
-                            }
-                        }
+                        });
                     }
-                });
-                match res {
-                    true => {
-                        new_params.extend(web_params.clone().move_iter());
-                        let f_result: Resp<T> = (*f)(new_params, self.producer.get_new());
-                        result = Some(f_result);
-                        break
-                    },
-                    false => new_params.clear()
+                    new_params.extend(web_params.clone().move_iter());
+                    result = Some((d.f)(new_params, self.producer.get_new()));
+                    break;
                 }
             }
         }
+
         result
     }
-}
-
-fn split_route(route: &str) -> Vec<String> {
-    let r_: Vec<&str> = route.split('/').collect();
-    let mut r_: Vec<String> = r_.iter().map(|r| r.to_string()).collect();
-    if r_.last().is_some() && r_.last().unwrap() == &"".to_string() { r_.pop(); }
-    r_
 }
 
 impl<T, U, P> Show for Dispatcher<T, U, P> {
