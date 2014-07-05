@@ -29,15 +29,15 @@ use std::collections::HashMap;
 
 use method::{Method, Get};
 use response::{Resp, RoutingError};
-use tools::{RoutesFnType, UnusedProducer, Unused, Producer};
+use tools::{RoutesFnType, UnusedProducer, Producer};
 
 /// The web dispatcher
-pub struct Dispatcher<T, P = UnusedProducer, U = Unused> {
+pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
     routes: HashMap<(Vec<String>, Method), RoutesFnType<T, U>>,
     producer: P
 }
 
-impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, U> {
+impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
     pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
             routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m)| {

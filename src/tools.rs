@@ -93,15 +93,12 @@ pub trait Producer<U> {
     fn get_new(&self) -> Box<U>;
 }
 
-/// Default type for unused user_param in routes
-pub struct Unused;
-
 #[doc(hidden)]
 #[deriving(Default)]
 pub struct UnusedProducer;
 
-impl Producer<Unused> for UnusedProducer {
-    fn get_new(&self) -> Box<Unused> {
-        box Unused
+impl Producer<()> for UnusedProducer {
+    fn get_new(&self) -> Box<()> {
+        box () ()
     }
 }
