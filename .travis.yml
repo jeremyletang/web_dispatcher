@@ -1,6 +1,11 @@
+env:
+  global:
+    - secure: fwVkgRpZ040++wbpE2/rRnd7BXPrrirOqNWBfS2+w3iumcH0ca6YXIRk5jfFazWwaRoImONBXL+8+fAFtL/ckJlDTSLjTS7tqAXJ8WNRdirlrKuOehhMXLtxwbFAGIrS9H7EEyPLnZ1XWb4sIzujqCXNdhM4mWT3LtzPKUeUuWA=
 before_install:
+  - yes | sudo add-apt-repository ppa:cmrx64/cargo
   - sudo apt-get update
 install:
+  - sudo apt-get install cargo
   - wget http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz
   - tar xzf rust-nightly-x86_64-unknown-linux-gnu.tar.gz
   - export PATH=$PATH:$(pwd)/rust-nightly-x86_64-unknown-linux-gnu/bin
@@ -8,4 +13,7 @@ env:
  - RUST_TEST_TASKS=1
 script:
   - rustc --version
-  - make
+  - cargo build
+  - rustdoc -o doc src/web_dispatcher.rs
+after_script:
+  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh

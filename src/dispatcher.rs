@@ -52,15 +52,15 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, 
         self.producer = param_producer
     }
 
-    pub fn run_for_method(&mut self,
-                          route: &str,
-                          web_params: HashMap<String, String>,
-                          method: Method)
-                          -> Resp<T> {
-        match self.simple_hash_find_route(route, &web_params, method) {
+    pub fn run_with_method(&mut self,
+                           route: &str,
+                           web_params: HashMap<String, String>,
+                           method: Method)
+                           -> Resp<T> {
+        match self.find_simple_hash_route(route, &web_params, method) {
             Some(r) => r,
             None    => {
-                match self.complex_regex_find_route(route, &web_params, method) {
+                match self.find_complex_regex_route(route, &web_params, method) {
                     Some(r) => r,
                     None    => RoutingError(format!("route: {}, don't exist", route))
                 }
@@ -72,10 +72,10 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, 
                route: &str,
                web_params: HashMap<String, String>)
                -> Resp<T> {
-        self.run_for_method(route, web_params, Get)
+        self.run_with_method(route, web_params, Get)
     }
 
-    fn simple_hash_find_route(&mut self,
+    fn find_simple_hash_route(&mut self,
                              route: &str,
                              web_params: &HashMap<String, String>,
                              method: Method)
@@ -87,11 +87,11 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = Unused> Dispatcher<T, P, 
         }
     }
 
-    fn complex_regex_find_route(&mut self,
-                             route: &str,
-                             web_params: &HashMap<String, String>,
-                             method: Method)
-                             -> Option<Resp<T>> {
+    fn find_complex_route(&mut self,
+                          route: &str,
+                          web_params: &HashMap<String, String>,
+                          method: Method)
+                          -> Option<Resp<T>> {
         let r_ = split_route(route);
         for (&(ref r, m), f) in self.routes.iter() {
             println!("{}", r);

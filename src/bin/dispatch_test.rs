@@ -28,7 +28,7 @@ extern crate web_dispatcher;
 
 use std::collections::HashMap;
 
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Unused, Producer};
+use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer};
 
 mod foo;
 
@@ -42,7 +42,7 @@ impl Producer<String> for StringProducer {
 }
 
 
-// #[method = "POST"]
+#[method = "POST"]
 #[route = "/hello/main"]
 pub fn hello_route(_: HashMap<String, String>, u: Box<String>) -> Resp<String> {
     println!("param u contains: {}", u);
@@ -61,6 +61,6 @@ fn main() {
     params.insert("Paul".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
     let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
-    let return_value = dispatcher.run("/hello/main", params);
+    let return_value = dispatcher.run_with_method("/hello/main", params, web_dispatcher::Post);
     println!("{}", return_value.unwrap());
 }

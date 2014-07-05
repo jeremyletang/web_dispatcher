@@ -22,16 +22,14 @@
 
 //! Some tools types for routes and responses
 
-use std::any::Any;
-
 use std::collections::HashMap;
 use response::Resp;
 
 /// Function signature for a route
 ///
 /// * `web_params` - the web parametre transmitted using GET or POST method +
-/// maybe one or more urls fragment. e.g for url `/home/{my_var}/account`,
-/// the url fragment int the place `{my_var}` will be inserted in the web_params
+/// maybe one or more urls fragment. e.g for url `/home/:my_var/account`,
+/// the url fragment int the place `:my_var` will be inserted in the web_params
 /// at the field `my_var`
 ///
 /// * `user_params` - a custom user parameter
@@ -95,7 +93,7 @@ pub trait Producer<U> {
     fn get_new(&self) -> Box<U>;
 }
 
-#[doc(hidden)]
+/// Default type for unused user_param in routes
 pub struct Unused;
 
 #[doc(hidden)]

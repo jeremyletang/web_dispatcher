@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 use std::collections::HashMap;
-use web_dispatcher::{Resp, Filled, Unused};
+use web_dispatcher::{Resp, Filled};
 
 #[route = "/hello/foo"]
 pub fn hello_route3(_: HashMap<String, String>, _: Box<String>) -> Resp<String> {
@@ -30,7 +30,7 @@ pub fn hello_route3(_: HashMap<String, String>, _: Box<String>) -> Resp<String> 
 
 pub mod bar {
     use std::collections::HashMap;
-    use web_dispatcher::{Resp, Filled, Unused};
+    use web_dispatcher::{Resp, Filled};
 
     #[route = "/hello/foo/bar"]
     pub fn hello_route4(_: HashMap<String, String>, _: Box<String>) -> Resp<String> {
