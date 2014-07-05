@@ -73,4 +73,5 @@ fn main() {
     dispatcher.run("/add/route", params.clone());
     dispatcher.run("/hello/*/bar/", params.clone());
     println!("{}", return_value.unwrap());
+    println!("{}", dispatcher);
 }

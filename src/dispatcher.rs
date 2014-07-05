@@ -26,6 +26,7 @@
 
 use std::default::Default;
 use std::collections::HashMap;
+use std::fmt::{Show, Formatter, FormatError};
 
 use method::{Method, Get};
 use response::{Resp, RoutingError};
@@ -174,3 +175,12 @@ fn split_route(route: &str) -> Vec<String> {
     r_
 }
 
+impl<T, U, P> Show for Dispatcher<T, U, P> {
+     fn fmt(&self, f: &mut Formatter) ->  Result<(), FormatError> {
+        let mut to_write = String::from_str("Dispatcher {\n");
+        for (&(ref r, m), _) in self.routes.iter() {
+            to_write.push_str(format!("    {} {}\n", m, r).as_slice());
+        }
+        write!(f, "{}}}\n", to_write)
+     }
+}
