@@ -34,8 +34,10 @@ use method::{Method, Get};
 use response::{Resp, RoutingError};
 use tools::{RoutesFnType, UnusedProducer, Producer};
 
+static RE_VAR: Regex = regex!(":[0-9a-zA-Z-_]+");
+
 pub struct RouteDatas<T, U> {
-    var_names: Vec<&'static str>,
+    var_names: Vec<String>,
     regex: Regex,
     f: RoutesFnType<T, U>
 }
@@ -47,20 +49,11 @@ pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
 }
 
 impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
-    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&'static str>, &str)>) -> Dispatcher<T, P, U> {
+    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&str>, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
             routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m, vars, matcher)| {
-                // let re = Regex::new(vars).unwrap();
-                // let vars: Vec<String> = match re.captures(r) {
-                //     Some(c) => {
-                //         let mut cap_i = c.iter();
-                //         cap_i.next();
-                //         cap_i.map(|x| String::from_str(x)).collect()
-                //     },
-                //     None => Vec::new()
-                // };
                 let d = RouteDatas {
-                    var_names: vars,
+                    var_names: vars.iter().map(|v| v.to_string()).collect(),
                     regex: Regex::new(matcher).unwrap(),
                     f: f
                 };
@@ -81,13 +74,18 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
         self.producer = param_producer
     }
 
-    // pub fn add_route(&mut self,
-    //                  func: RoutesFnType<T, U>,
-    //                  route_name: &str,
-    //                  method: Method) {
-
-    //     self.routes.insert((split_route(route_name), method), func);
-    // }
+    pub fn add(&mut self,
+               func: RoutesFnType<T, U>,
+               route: &str,
+               method: Method) {
+        let clean_route = remove_trailling_slash(route);
+        self.routes.insert((clean_route.to_string(), method),
+                           RouteDatas {
+                               var_names: create_vars_regex_vec(clean_route.as_slice()),
+                               regex: create_match_regex(clean_route.as_slice()),
+                               f: func
+                           });
+    }
 
     pub fn run_with_method(&mut self,
                            route: &str,
@@ -117,7 +115,6 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                              web_params: &HashMap<String, String>,
                              method: Method)
                              -> Option<Resp<T>> {
-        // let r_ = split_route(route);
         match self.routes.find(&(route.to_string(), method)) {
             Some(f) => Some((f.f)(web_params.clone(), self.producer.get_new())),
             None     => None
@@ -154,11 +151,53 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
     }
 }
 
+fn remove_trailling_slash(route: &str) -> String {
+    let mut r = route.to_string();
+    let mut len = r.len() - 1u;
+    while r.len() > 0 && r.as_bytes()[len] == '/' as u8 {
+        r.pop_char();
+        len -= 1;
+    }
+    r
+}
+
+// create a Vec which contains all the captures names for a route
+fn create_vars_regex_vec(route: &str) -> Vec<String> {
+    let vars_regex = create_vars_regex(route);
+    let re = Regex::new(vars_regex.as_slice()).unwrap();
+    match re.captures(route) {
+        Some(c) => {
+            let mut cap_i = c.iter();
+            cap_i.next();
+            cap_i.map(|x| {x.to_string()}).collect()
+        },
+        None => Vec::new()
+    }
+}
+
+// create the regex to captures the vars in the route
+fn create_vars_regex(r: &str) -> String {
+    let mut var_reg: String = String::from_char(1, '^');
+    var_reg = var_reg.append(RE_VAR.replace_all(r, ":([0-9a-zA-Z-_]+)").as_slice());
+    var_reg = var_reg.replace("*", "\\*");
+    var_reg.push_str("/??$");
+    var_reg
+}
+
+// crete the matching regex to recognize the routes
+fn create_match_regex(r: &str) -> Regex {
+    let mut match_reg: String = String::from_char(1, '^');
+    match_reg = match_reg.append(RE_VAR.replace_all(r, "([0-9a-zA-Z-_]+)").as_slice());
+    match_reg = match_reg.replace("*", "[0-9a-zA-Z-_]*");
+    match_reg.push_str("/??$");
+    Regex::new(match_reg.as_slice()).unwrap()
+}
+
 impl<T, U, P> Show for Dispatcher<T, U, P> {
      fn fmt(&self, f: &mut Formatter) ->  Result<(), FormatError> {
         let mut to_write = String::from_str("Dispatcher {\n");
         for (&(ref r, m), _) in self.routes.iter() {
-            to_write.push_str(format!("    {} {}\n", m, r).as_slice());
+            to_write.push_str(format!("  {} {}\n", m, r).as_slice());
         }
         write!(f, "{}}}\n", to_write)
      }

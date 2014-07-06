@@ -69,7 +69,6 @@ use regex::Regex;
 
 static RE_VAR: Regex = regex!(":[0-9a-zA-Z-_]+");
 
-
 // Store routes in a local data (vector of path ident, associated route, method as a string)
 static routes: local_data::Key<Vec<(Vec<Ident>, String, String)>> = &local_data::Key;
 
@@ -90,26 +89,35 @@ pub fn plugin_registrar(reg: &mut Registry) {
 
 fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResult> {
     let v = local_data_get_or_init();
-    let v = v.iter().map(|&(ref f, ref s, ref m)| {
-        let p = create_func_path_expr(f, sp);
-        let s_ = s.as_slice();
-        let m_ = m.as_slice();
-        let vars_reg = create_vars_regex(s_);
-        let v_r = vars_reg.as_slice();
-        let vars = create_vars_slice_regex(cx, v_r, s_, sp);
-        // println!("VARS: {}", vars);
-        let match_reg = create_match_regex(s_);
-        let m_r = match_reg.as_slice();
-        // println!("route: {}, var_reg: {}, match_reg: {}", s_, v_r, m_r);
-        quote_expr!(&*cx, ($p, $s_, $m_, $vars.to_owned(), $m_r))
+    let v = v.iter().map(|&(ref f, ref r, ref m)| {
+        let func_path = create_func_path_expr(f, sp);
+        let _route = remove_trailling_slash(r.as_slice());
+        let route = _route.as_slice();
+        let method = m.as_slice();
+        let vars = create_vars_regex_vec(cx, route, sp);
+        let m_r = create_match_regex(route);
+        let match_reg = m_r.as_slice();
+        quote_expr!(&*cx, ($func_path, $route, $method, $vars.to_owned(), $match_reg))
     }).collect();
-    let v = create_slice_expr(v, sp);
+    let v = create_vec_expr(v, sp);
     // MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
     MacExpr::new(quote_expr!(cx, $v.to_owned()))
 }
 
-fn create_vars_slice_regex(cx: &mut ExtCtxt, vars_regex: &str, route: &str, sp: Span) -> Gc<Expr> {
-    let re = Regex::new(vars_regex).unwrap();
+fn remove_trailling_slash(route: &str) -> String {
+    let mut r = route.to_string();
+    let mut len = r.len() - 1u;
+    while r.len() > 0 && r.as_bytes()[len] == '/' as u8 {
+        r.pop_char();
+        len -= 1;
+    }
+    r
+}
+
+// create a Vec which contains all the captures names for a route
+fn create_vars_regex_vec(cx: &mut ExtCtxt, route: &str, sp: Span) -> Gc<Expr> {
+    let vars_regex = create_vars_regex(route);
+    let re = Regex::new(vars_regex.as_slice()).unwrap();
     let vars = match re.captures(route) {
         Some(c) => {
             let mut cap_i = c.iter();
@@ -120,11 +128,12 @@ fn create_vars_slice_regex(cx: &mut ExtCtxt, vars_regex: &str, route: &str, sp: 
         },
         None => Vec::new()
     };
-    create_slice_expr(vars, sp)
+    create_vec_expr(vars, sp)
 }
 
-// create a slice from the vector of (path / routes / method)
-fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
+// create a Vec from the vector of (path, (routes, method, vars, match_regex))
+// or any other expr base on a Vec
+fn create_vec_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
     box(GC) Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprVec(vec),
@@ -132,19 +141,21 @@ fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
     }
 }
 
+// create the regex to captures the vars in the route
 fn create_vars_regex(r: &str) -> String {
     let mut var_reg: String = String::from_char(1, '^');
     var_reg = var_reg.append(RE_VAR.replace_all(r, ":([0-9a-zA-Z-_]+)").as_slice());
     var_reg = var_reg.replace("*", "\\*");
-    var_reg.push_str("?/$");
+    var_reg.push_str("/??$");
     var_reg
 }
 
+// crete the matching regex to recognize the routes
 fn create_match_regex(r: &str) -> String {
     let mut match_reg: String = String::from_char(1, '^');
     match_reg = match_reg.append(RE_VAR.replace_all(r, "([0-9a-zA-Z-_]+)").as_slice());
     match_reg = match_reg.replace("*", "[0-9a-zA-Z-_]*");
-    match_reg.push_str("?/$");
+    match_reg.push_str("/??$");
     match_reg
 }
 

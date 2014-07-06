@@ -30,10 +30,11 @@
 #![experimental]
 #![allow(missing_doc)]
 #![feature(macro_rules)]
-#![feature(default_type_params)]
+#![feature(default_type_params, phase)]
 
-extern crate regex;
+#[phase(plugin, link)]
 extern crate regex_macros;
+extern crate regex;
 
 pub use dispatcher::Dispatcher;
 pub use tools::{WebParams, RoutesFnType, Producer};
