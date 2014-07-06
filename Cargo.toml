@@ -2,14 +2,16 @@
 name = "web_dispatcher"
 version = "0.0.1"
 authors = ["letang.jeremy@gmail.com"]
-build = "make route_macros"
 
 [[lib]]
 name = "web_dispatcher"
-crate-type = ["rlib", "dylib"]
+crate_type = ["dylib", "rlib"]
 
 [[bin]]
 name = "dispatch_test"
 
 [[bin]]
 name = "readme_ex"
+
+[dependencies.route_macros]
+git = "https://github.com/jeremyletang/route_macros.git"
