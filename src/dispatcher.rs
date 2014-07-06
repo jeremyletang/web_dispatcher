@@ -35,7 +35,7 @@ use response::{Resp, RoutingError};
 use tools::{RoutesFnType, UnusedProducer, Producer};
 
 pub struct RouteDatas<T, U> {
-    var_names: Vec<String>,
+    var_names: Vec<&'static str>,
     regex: Regex,
     f: RoutesFnType<T, U>
 }
@@ -47,18 +47,18 @@ pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
 }
 
 impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
-    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, &str, &str)>) -> Dispatcher<T, P, U> {
+    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&'static str>, &str)>) -> Dispatcher<T, P, U> {
         Dispatcher {
             routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m, vars, matcher)| {
-                let re = Regex::new(vars).unwrap();
-                let vars: Vec<String> = match re.captures(r) {
-                    Some(c) => {
-                        let mut cap_i = c.iter();
-                        cap_i.next();
-                        cap_i.map(|x| String::from_str(x)).collect()
-                    },
-                    None => Vec::new()
-                };
+                // let re = Regex::new(vars).unwrap();
+                // let vars: Vec<String> = match re.captures(r) {
+                //     Some(c) => {
+                //         let mut cap_i = c.iter();
+                //         cap_i.next();
+                //         cap_i.map(|x| String::from_str(x)).collect()
+                //     },
+                //     None => Vec::new()
+                // };
                 let d = RouteDatas {
                     var_names: vars,
                     regex: Regex::new(matcher).unwrap(),
@@ -70,6 +70,13 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
         }
     }
 
+    pub fn new_with_producer(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&'static str>, &str)>,
+                             producer: P) -> Dispatcher<T, P, U> {
+        let mut d = Dispatcher::new(routes);
+        d.producer = producer;
+        d
+    }
+
     pub fn set_producer(&mut self, param_producer: P) {
         self.producer = param_producer
     }
@@ -78,6 +85,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
     //                  func: RoutesFnType<T, U>,
     //                  route_name: &str,
     //                  method: Method) {
+
     //     self.routes.insert((split_route(route_name), method), func);
     // }
 
@@ -131,7 +139,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                         let mut i = c.iter();
                         i.next();
                         d.var_names.iter().zip(i).advance(|(a, b)| {
-                            new_params.insert(a.clone(), b.to_string());
+                            new_params.insert(a.to_string(), b.to_string());
                             true
                         });
                     }

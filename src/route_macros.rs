@@ -22,7 +22,7 @@
 
 //! A syntax extension to handle route attributes
 
-#![crate_id = "route_macros"]
+#![crate_name = "route_macros"]
 #![desc = "route macros for Rust"]
 #![license = "mit"]
 #![crate_type = "rlib"]
@@ -67,8 +67,6 @@ use syntax::ext::base::{ExtCtxt,
 
 use regex::Regex;
 
-static WILDCARD: &'static str = "[0-9:alpha:_]*";
-static VAR: &'static str = ":[0-9a-zA-Z-_]+";
 static RE_VAR: Regex = regex!(":[0-9a-zA-Z-_]+");
 
 
@@ -98,14 +96,40 @@ fn expand_get_routes(cx: &mut ExtCtxt, sp: Span, _: &[TokenTree]) -> Box<MacResu
         let m_ = m.as_slice();
         let vars_reg = create_vars_regex(s_);
         let v_r = vars_reg.as_slice();
+        let vars = create_vars_slice_regex(cx, v_r, s_, sp);
+        // println!("VARS: {}", vars);
         let match_reg = create_match_regex(s_);
         let m_r = match_reg.as_slice();
         // println!("route: {}, var_reg: {}, match_reg: {}", s_, v_r, m_r);
-        quote_expr!(&*cx, ($p, $s_, $m_, $v_r, $m_r))
+        quote_expr!(&*cx, ($p, $s_, $m_, $vars.to_owned(), $m_r))
     }).collect();
     let v = create_slice_expr(v, sp);
     // MacExpr::new(quote_expr!(cx, Vec::from_slice($v.to_owned())))
     MacExpr::new(quote_expr!(cx, $v.to_owned()))
+}
+
+fn create_vars_slice_regex(cx: &mut ExtCtxt, vars_regex: &str, route: &str, sp: Span) -> Gc<Expr> {
+    let re = Regex::new(vars_regex).unwrap();
+    let vars = match re.captures(route) {
+        Some(c) => {
+            let mut cap_i = c.iter();
+            cap_i.next();
+            cap_i.map(|x| {
+                quote_expr!(&*cx, $x)
+            }).collect()
+        },
+        None => Vec::new()
+    };
+    create_slice_expr(vars, sp)
+}
+
+// create a slice from the vector of (path / routes / method)
+fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
+    box(GC) Expr {
+        id: ast::DUMMY_NODE_ID,
+        node: ExprVec(vec),
+        span: sp
+    }
 }
 
 fn create_vars_regex(r: &str) -> String {
@@ -144,15 +168,6 @@ fn create_func_path_expr(vec_ident: &Vec<Ident>, sp: Span) -> Gc<Expr> {
     box(GC) Expr {
         id: ast::DUMMY_NODE_ID,
         node: ExprPath(func_path),
-        span: sp
-    }
-}
-
-// create a slice from the vector of (path / routes / method)
-fn create_slice_expr(vec: Vec<Gc<Expr>>, sp: Span) -> Gc<Expr> {
-    box(GC) Expr {
-        id: ast::DUMMY_NODE_ID,
-        node: ExprVec(vec),
         span: sp
     }
 }
