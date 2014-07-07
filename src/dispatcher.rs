@@ -31,27 +31,28 @@ use std::fmt::{Show, Formatter, FormatError};
 use regex::Regex;
 
 use method::{Method, Get};
-use response::{Resp, RoutingError};
+use response::{Response, Request};
 use tools::{RoutesFnType, UnusedProducer, Producer};
+
 
 static RE_VAR: Regex = regex!(":[0-9a-zA-Z-_]+");
 
-pub struct RouteDatas<T, U> {
+pub struct RouteDatas<U> {
     var_names: Vec<String>,
     regex: Regex,
-    f: RoutesFnType<T, U>
+    f: RoutesFnType<U>
 }
 
 /// The web dispatcher
-pub struct Dispatcher<T, P = UnusedProducer, U = ()> {
-    routes: HashMap<(String, Method), RouteDatas<T, U>>,
+pub struct Dispatcher<P = UnusedProducer, U = ()> {
+    routes: HashMap<(String, Method), RouteDatas<U>>,
     producer: P
 }
 
-impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
-    pub fn new(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&str>, &str)>) -> Dispatcher<T, P, U> {
+impl<P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<P, U> {
+    pub fn new(routes: &[(RoutesFnType<U>, &str, &str, Vec<&str>, &str)]) -> Dispatcher<P, U> {
         Dispatcher {
-            routes: routes.move_iter().fold(HashMap::new(), |mut h, (f, r, m, vars, matcher)| {
+            routes: routes.iter().fold(HashMap::new(), |mut h, &(f, r, m, ref vars, matcher)| {
                 let d = RouteDatas {
                     var_names: vars.iter().map(|v| v.to_string()).collect(),
                     regex: Regex::new(matcher).unwrap(),
@@ -63,19 +64,19 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
         }
     }
 
-    pub fn new_with_producer(routes: Vec<(RoutesFnType<T, U>, &str, &str, Vec<&'static str>, &str)>,
-                             producer: P) -> Dispatcher<T, P, U> {
-        let mut d = Dispatcher::new(routes);
-        d.producer = producer;
-        d
-    }
+    // pub fn new_with_producer(routes: Vec<(RoutesFnType<U>, &str, &str, Vec<&'static str>, &str)>,
+    //                          producer: P) -> Dispatcher<P, U> {
+    //     let mut d = Dispatcher::new(routes);
+    //     d.producer = producer;
+    //     d
+    // }
 
     pub fn set_producer(&mut self, param_producer: P) {
         self.producer = param_producer
     }
 
     pub fn add(&mut self,
-               func: RoutesFnType<T, U>,
+               func: RoutesFnType<U>,
                route: &str,
                method: Method) {
         let clean_route = remove_trailling_slash(route);
@@ -91,13 +92,13 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                            route: &str,
                            web_params: HashMap<String, String>,
                            method: Method)
-                           -> Resp<T> {
+                           -> Result<Box<Response>, String> {
         match self.find_simple_hash_route(route, &web_params, method) {
-            Some(r) => r,
+            Some(r) => Ok(r),
             None    => {
                 match self.find_complex_route(route, &web_params, method) {
-                    Some(r) => r,
-                    None    => RoutingError(format!("route: {}, don't exist", route))
+                    Some(r) => Ok(r),
+                    None    => Err(format!("route: {}, don't exist", route))
                 }
             }
         }
@@ -106,7 +107,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
     pub fn run(&mut self,
                route: &str,
                web_params: HashMap<String, String>)
-               -> Resp<T> {
+               -> Result<Box<Response>, String> {
         self.run_with_method(route, web_params, Get)
     }
 
@@ -114,9 +115,9 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                              route: &str,
                              web_params: &HashMap<String, String>,
                              method: Method)
-                             -> Option<Resp<T>> {
+                             -> Option<Box<Response>> {
         match self.routes.find(&(route.to_string(), method)) {
-            Some(f) => Some((f.f)(web_params.clone(), self.producer.get_new())),
+            Some(f) => Some((f.f)(web_params as &Request, self.producer.get_new())),
             None     => None
         }
     }
@@ -125,7 +126,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                           route: &str,
                           web_params: &HashMap<String, String>,
                           method: Method)
-                          -> Option<Resp<T>> {
+                          -> Option<Box<Response>> {
         let mut result = None;
         for (&(_, m), d) in self.routes.iter() {
             if m == method {
@@ -141,7 +142,7 @@ impl<T, P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<T, P, U> {
                         });
                     }
                     new_params.extend(web_params.clone().move_iter());
-                    result = Some((d.f)(new_params, self.producer.get_new()));
+                    result = Some((d.f)(&new_params, self.producer.get_new()));
                     break;
                 }
             }
@@ -193,7 +194,7 @@ fn create_match_regex(r: &str) -> Regex {
     Regex::new(match_reg.as_slice()).unwrap()
 }
 
-impl<T, U, P> Show for Dispatcher<T, U, P> {
+impl<U, P> Show for Dispatcher<U, P> {
      fn fmt(&self, f: &mut Formatter) ->  Result<(), FormatError> {
         let mut to_write = String::from_str("Dispatcher {\n");
         for (&(ref r, m), _) in self.routes.iter() {

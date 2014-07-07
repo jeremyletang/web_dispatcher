@@ -25,10 +25,11 @@
 #[phase(plugin, link)]
 extern crate route_macros;
 extern crate web_dispatcher;
+extern crate debug;
 
 use std::collections::HashMap;
 
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled, Producer, Get};
+use web_dispatcher::{Dispatcher, WebParams, Producer, Get, Request, Response};
 
 mod foo;
 
@@ -44,29 +45,28 @@ impl Producer<String> for StringProducer {
 
 #[method = "post"]
 #[route = "/hello/main"]
-pub fn hello_route(_: HashMap<String, String>, u: String) -> Resp<String> {
+pub fn hello_route(_: &Request, u: String) -> Box<Response> {
     println!("param u contains: {}", u);
-    Filled("hello from root mod !".to_string())
+    box () () as Box<Response>
 }
 
 #[route = "/hello/:my_var/world/*/main/"]
-pub fn hello_route2(p: HashMap<String, String>, _: String) -> Resp<String> {
-    println!("From wildcar + var: :my_var is {}", p.to_string("my_var"));
-    Filled(format!("Your name is: {}, and your age is: {} !",
-           p.to_string("name").unwrap(),
-           p.to_int("age").unwrap()))
+pub fn hello_route2(p: &Request, _: String) -> Box<Response> {
+    println!("From wildcar + var: :my_var is {}", p.params().to_string("my_var"));
+    box () () as Box<Response>
 }
 
-pub fn add_route(p: HashMap<String, String>, _: String) -> Resp<String> {
-    println!("Hand added route, user: {}", p.to_string("user"));
-    Filled("Hand added route!".to_string())
+pub fn add_route(p: &Request, _: String) -> Box<Response> {
+    println!("Hand added route, user: {}", p.params().to_string("user"));
+    box () () as Box<Response>
 }
 
 fn main() {
     let mut params = HashMap::new();
+    let routes = routes!();
     params.insert("name".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
-    let mut dispatcher = Dispatcher::<String, StringProducer, String>::new(routes!());
+    let mut dispatcher = Dispatcher::<StringProducer, String>::new(routes.as_slice());
     dispatcher.add(add_route,
                    "/add/*/route/:user/blah/",
                    Get);
@@ -74,6 +74,7 @@ fn main() {
     dispatcher.run("/hello/blah/world/blahahahahaha/main/", params.clone());
     dispatcher.run("/add/blah/route/jon/blah/", params.clone());
     dispatcher.run("/hello/foo/bar/", params.clone());
-    println!("{}", return_value.unwrap());
+    // println!("{}", return_value.unwrap());
     println!("{}", dispatcher);
+    println!("{:?}", &routes!());
 }

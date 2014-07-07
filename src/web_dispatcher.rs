@@ -39,7 +39,7 @@ extern crate regex;
 pub use dispatcher::Dispatcher;
 pub use tools::{WebParams, RoutesFnType, Producer};
 pub use method::{Method, Get, Post, Head, Delete, Put, Connect};
-pub use response::{Resp, Filled, NoResp, InternalError, RoutingError};
+pub use response::{Response, Request};
 
 mod tools;
 mod response;

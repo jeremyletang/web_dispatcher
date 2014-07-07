@@ -21,20 +21,21 @@
 // SOFTWARE.
 
 use std::collections::HashMap;
-use web_dispatcher::{Resp, Filled};
+use web_dispatcher::{Response, Request};
 
 #[route = "/hello/foo"]
-pub fn hello_route3(_: HashMap<String, String>, _: String) -> Resp<String> {
-    Filled("Hello from foo mod !".to_string())
+pub fn hello_route3(_: &Request, _: String) -> Box<Response> {
+    println!("Hello from foo mod !");
+    box () () as Box<Response>
 }
 
 pub mod bar {
     use std::collections::HashMap;
-    use web_dispatcher::{Resp, Filled};
+    use web_dispatcher::{Response, Request};
 
     #[route = "/hello/*/bar"]
-    pub fn hello_route4(_: HashMap<String, String>, _: String) -> Resp<String> {
-        println!("hey * matching work !")
-        Filled("hello from foo::bar mod !".to_string())
+    pub fn hello_route4(_: &Request, _: String) -> Box<Response> {
+        println!("hey * matching work !");
+        box () () as Box<Response>
     }
 }

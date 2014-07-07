@@ -5,10 +5,10 @@ extern crate route_macros;
 extern crate web_dispatcher;
 
 use std::collections::HashMap;
-use web_dispatcher::{Dispatcher, WebParams, Resp, Filled} ;
+use web_dispatcher::{Dispatcher, WebParams} ;
 
 #[route = "/some/*/strange/:age/route"]
-pub fn default(p: HashMap<String, String>, _: ()) -> Resp<String> {
+pub fn default(p: HashMap<String, String>, _: ()) -> Response {
     Filled(format!("The name is: {} and the age is {}",
                    p.to_string("name"),
                    p.to_int("age")))
@@ -26,5 +26,5 @@ fn main() {
     let return_value = dispatcher.run("/some/really/strange/42/route", params);
 
     // print the response
-    println!("{}", return_value.unwrap())
+    // println!("{}", return_value.unwrap())
 }

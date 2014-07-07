@@ -20,40 +20,66 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use std::default::Default;
+// use std::default::Default;
+use std::collections::HashMap;
+use std::from_str::FromStr;
 
-/// Responses returned by the web dispatcher
-#[deriving(Show, PartialEq, PartialOrd)]
-pub enum Resp<T> {
-    /// The route is valid and the functon has filled the response with data
-    Filled(T),
-    /// The route is valid but the function don't returned nothing
-    NoResp,
-    /// The route is valid but an error has occured inside the user function
-    InternalError(String),
-    /// The route is not valid this error is returned by the web dispatcher
-    RoutingError(String)
+pub trait Response: Clone {}
+
+impl Response for () {}
+
+pub trait Request: Clone {
+    fn get<T: FromStr>(&self, param: &str) -> Option<T>;
+    fn params<'r>(&'r self) -> &'r HashMap<String, String>;
+    fn get_uri(&self) -> String { String::from_str("") }
+    fn get_host(&self) -> String { String::from_str("") }
 }
 
-impl<T> Resp<T> {
-    pub fn is_success(&self) -> bool {
-        match *self {
-            Filled(_)
-            | NoResp => true,
-            _        => false
+impl Request for HashMap<String, String> {
+    fn get<T: FromStr>(&self, param: &str) -> Option<T> {
+        match self.find(&param.to_string()) {
+            Some(pp) => from_str(pp.as_slice()),
+            None => None
         }
     }
 
-    pub fn unwrap(self) -> T {
-        match self {
-            Filled(t) => t,
-            _         => fail!()
-        }
+    fn params<'r>(&'r self) -> &'r HashMap<String, String> {
+        self
     }
 }
 
-impl<T: Default> Default for Resp<T> {
-    fn default() -> Resp<T> {
-        Filled(Default::default())
-    }
-}
+// /// Responses returned by the web dispatcher
+// #[deriving(Show, PartialEq, PartialOrd)]
+// pub enum Resp<T> {
+//     /// The route is valid and the functon has filled the response with data
+//     Filled(T),
+//     /// The route is valid but the function don't returned nothing
+//     NoResp,
+//     /// The route is valid but an error has occured inside the user function
+//     InternalError(String),
+//     /// The route is not valid this error is returned by the web dispatcher
+//     RoutingError(String)
+// }
+
+// impl<T> Resp<T> {
+//     pub fn is_success(&self) -> bool {
+//         match *self {
+//             Filled(_)
+//             | NoResp => true,
+//             _        => false
+//         }
+//     }
+
+//     pub fn unwrap(self) -> T {
+//         match self {
+//             Filled(t) => t,
+//             _         => fail!()
+//         }
+//     }
+// }
+
+// impl<T: Default> Default for Resp<T> {
+//     fn default() -> Resp<T> {
+//         Filled(Default::default())
+//     }
+// }

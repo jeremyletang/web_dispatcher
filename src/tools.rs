@@ -23,7 +23,8 @@
 //! Some tools types for routes and responses
 
 use std::collections::HashMap;
-use response::Resp;
+
+use response::{Request, Response};
 
 /// Function signature for a route
 ///
@@ -35,7 +36,8 @@ use response::Resp;
 /// * `user_params` - a custom user parameter
 ///
 /// * `return` - Resp<T> the custom return value of the function
-pub type RoutesFnType<T, U> = fn(web_params: HashMap<String, String>, user_param: U) -> Resp<T>;
+#[deriving(Clone)]
+pub type RoutesFnType<U> = fn(r: &Request, u: U) -> Box<Response>;
 
 /// Retrieve a given type from web params easily
 ///
