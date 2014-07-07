@@ -30,7 +30,7 @@ use std::fmt::{Show, Formatter, FormatError};
 
 use regex::Regex;
 
-use method::{Method, Get};
+use method::Method;
 use response::{Response, Request};
 use tools::{RoutesFnType, UnusedProducer, Producer};
 
@@ -96,15 +96,14 @@ impl<U = (), P: Producer<U> + Default = UnusedProducer> Dispatcher<U, P> {
                            });
     }
 
-    pub fn run_with_method(&mut self,
-                           route: &str,
-                           web_params: HashMap<String, String>,
-                           method: Method)
-                           -> Result<Box<Response>, String> {
-        match self.find_simple_hash_route(route, &web_params, method) {
+    pub fn run_request(&mut self,
+                       route: &str,
+                       request: &mut Request)
+                       -> Result<Box<Response>, String> {
+        match self.find_simple_hash_route(route, request) {
             Some(r) => Ok(r),
             None    => {
-                match self.find_complex_route(route, &web_params, method) {
+                match self.find_complex_route(route, request) {
                     Some(r) => Ok(r),
                     None    => Err(format!("route: {}, don't exist", route))
                 }
@@ -114,30 +113,28 @@ impl<U = (), P: Producer<U> + Default = UnusedProducer> Dispatcher<U, P> {
 
     pub fn run(&mut self,
                route: &str,
-               web_params: HashMap<String, String>)
+               mut web_params: HashMap<String, String>)
                -> Result<Box<Response>, String> {
-        self.run_with_method(route, web_params, Get)
+        self.run_request(route, &mut web_params as &mut Request)
     }
 
     fn find_simple_hash_route(&mut self,
                              route: &str,
-                             web_params: &HashMap<String, String>,
-                             method: Method)
+                             request: &mut Request)
                              -> Option<Box<Response>> {
-        match self.routes.find(&(route.to_string(), method)) {
-            Some(f) => Some((f.f)(web_params as &Request, self.producer.get_new())),
+        match self.routes.find(&(route.to_string(), request.method())) {
+            Some(f) => Some((f.f)(request, self.producer.get_new())),
             None     => None
         }
     }
 
     fn find_complex_route(&mut self,
                           route: &str,
-                          web_params: &HashMap<String, String>,
-                          method: Method)
+                          request: &mut Request)
                           -> Option<Box<Response>> {
         let mut result = None;
         for (&(_, m), d) in self.routes.iter() {
-            if m == method {
+            if m == request.method() {
                 if d.regex.is_match(route) {
                     let mut new_params: HashMap<String, String> = HashMap::new();
                     if d.var_names.len() > 0 {
@@ -149,8 +146,8 @@ impl<U = (), P: Producer<U> + Default = UnusedProducer> Dispatcher<U, P> {
                             true
                         });
                     }
-                    new_params.extend(web_params.clone().move_iter());
-                    result = Some((d.f)(&new_params, self.producer.get_new()));
+                    request.add_params(new_params);
+                    result = Some((d.f)(request, self.producer.get_new()));
                     break;
                 }
             }

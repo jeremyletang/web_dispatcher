@@ -74,7 +74,7 @@ fn main() {
     dispatcher.add(add_route,
                    "/add/*/route/:user/blah/",
                    Get);
-    let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
+    // let return_value = dispatcher.run_with_method("/hello/main", params.clone(), web_dispatcher::Post);
     dispatcher.run("/hello/blah/world/blahahahahaha/main/", params.clone());
     dispatcher.run("/add/blah/route/jon/blah/", params.clone());
     dispatcher.run("/hello/foo/bar/", params.clone());

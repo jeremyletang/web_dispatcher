@@ -23,21 +23,30 @@
 // use std::default::Default;
 use std::collections::HashMap;
 use std::default::Default;
+use method::{Method, Get};
 
 pub trait Response: Clone + Default {}
 
 impl Response for () {}
 
-pub trait Request: Clone {
+pub trait Request {
     fn params<'r>(&'r self) -> &'r HashMap<String, String>;
     fn get_uri(&self) -> String { String::from_str("") }
     fn get_host(&self) -> String { String::from_str("") }
+    fn add_params(&mut self, params: HashMap<String, String>);
+    fn method(&self) -> Method;
 }
 
 impl Request for HashMap<String, String> {
     fn params<'r>(&'r self) -> &'r HashMap<String, String> {
         self
     }
+
+    fn add_params(&mut self, params: HashMap<String, String>) {
+        self.extend(params.move_iter());
+    }
+
+    fn method(&self) -> Method { Get }
 }
 
 // /// Responses returned by the web dispatcher

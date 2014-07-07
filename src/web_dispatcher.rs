@@ -35,6 +35,7 @@
 #[phase(plugin, link)]
 extern crate regex_macros;
 extern crate regex;
+extern crate http;
 
 pub use dispatcher::Dispatcher;
 pub use tools::{WebParams, RoutesFnType, Producer};

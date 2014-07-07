@@ -15,3 +15,6 @@ name = "readme_ex"
 
 [dependencies.route_macros]
 git = "https://github.com/jeremyletang/route_macros.git"
+
+[dependencies.http]
+git = "https://github.com/chris-morgan/rust-http.git"
