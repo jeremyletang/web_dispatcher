@@ -22,27 +22,19 @@
 
 // use std::default::Default;
 use std::collections::HashMap;
-use std::from_str::FromStr;
+use std::default::Default;
 
-pub trait Response: Clone {}
+pub trait Response: Clone + Default {}
 
 impl Response for () {}
 
 pub trait Request: Clone {
-    fn get<T: FromStr>(&self, param: &str) -> Option<T>;
     fn params<'r>(&'r self) -> &'r HashMap<String, String>;
     fn get_uri(&self) -> String { String::from_str("") }
     fn get_host(&self) -> String { String::from_str("") }
 }
 
 impl Request for HashMap<String, String> {
-    fn get<T: FromStr>(&self, param: &str) -> Option<T> {
-        match self.find(&param.to_string()) {
-            Some(pp) => from_str(pp.as_slice()),
-            None => None
-        }
-    }
-
     fn params<'r>(&'r self) -> &'r HashMap<String, String> {
         self
     }

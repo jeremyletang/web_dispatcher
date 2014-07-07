@@ -20,6 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#![allow(unused_imports)]
+#![allow(unused_must_use)]
+#![allow(unused_variable)]
 #![feature(phase)]
 
 #[phase(plugin, link)]
@@ -52,7 +55,8 @@ pub fn hello_route(_: &Request, u: String) -> Box<Response> {
 
 #[route = "/hello/:my_var/world/*/main/"]
 pub fn hello_route2(p: &Request, _: String) -> Box<Response> {
-    println!("From wildcar + var: :my_var is {}", p.params().to_string("my_var"));
+    println!("From wildcar + var: :my_var is {}",
+             p.params().to_string("my_var"));
     box () () as Box<Response>
 }
 
@@ -66,7 +70,7 @@ fn main() {
     let routes = routes!();
     params.insert("name".to_string(), "Paul".to_string());
     params.insert("age".to_string(), "42".to_string());
-    let mut dispatcher = Dispatcher::<StringProducer, String>::new(routes.as_slice());
+    let mut dispatcher = Dispatcher::<String, StringProducer>::new(routes.as_slice());
     dispatcher.add(add_route,
                    "/add/*/route/:user/blah/",
                    Get);

@@ -44,13 +44,13 @@ pub struct RouteDatas<U> {
 }
 
 /// The web dispatcher
-pub struct Dispatcher<P = UnusedProducer, U = ()> {
+pub struct Dispatcher<U = (), P = UnusedProducer> {
     routes: HashMap<(String, Method), RouteDatas<U>>,
     producer: P
 }
 
-impl<P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<P, U> {
-    pub fn new(routes: &[(RoutesFnType<U>, &str, &str, Vec<&str>, &str)]) -> Dispatcher<P, U> {
+impl<U = (), P: Producer<U> + Default = UnusedProducer> Dispatcher<U, P> {
+    pub fn new(routes: &[(RoutesFnType<U>, &str, &str, Vec<&str>, &str)]) -> Dispatcher<U, P> {
         Dispatcher {
             routes: routes.iter().fold(HashMap::new(), |mut h, &(f, r, m, ref vars, matcher)| {
                 let d = RouteDatas {
@@ -64,12 +64,20 @@ impl<P: Producer<U> + Default = UnusedProducer, U = ()> Dispatcher<P, U> {
         }
     }
 
-    // pub fn new_with_producer(routes: Vec<(RoutesFnType<U>, &str, &str, Vec<&'static str>, &str)>,
-    //                          producer: P) -> Dispatcher<P, U> {
-    //     let mut d = Dispatcher::new(routes);
-    //     d.producer = producer;
-    //     d
-    // }
+    pub fn new_with_producer(routes: &[(RoutesFnType<U>, &str, &str, Vec<&'static str>, &str)],
+                             producer: P) -> Dispatcher<U, P> {
+        Dispatcher {
+            routes: routes.iter().fold(HashMap::new(), |mut h, &(f, r, m, ref vars, matcher)| {
+                let d = RouteDatas {
+                    var_names: vars.iter().map(|v| v.to_string()).collect(),
+                    regex: Regex::new(matcher).unwrap(),
+                    f: f
+                };
+                h.insert((r.to_string(), from_str(m).unwrap()), d); h
+            }),
+            producer: producer
+        }
+    }
 
     pub fn set_producer(&mut self, param_producer: P) {
         self.producer = param_producer
